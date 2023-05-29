@@ -8,8 +8,19 @@ const Navigation = () => {
         <Link className="navbar-item" to="/">
           <img alt="Neighborly Logo" src={logo} />
         </Link>
+        <a
+          role="button"
+          class="navbar-burger"
+          aria-label="menu"
+          aria-expanded="false"
+          data-target="mainLayoutNavbar"
+        >
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
       </div>
-      <div id="navbarBasicExample" class="navbar-menu">
+      <div id="mainLayoutNavbar" class="navbar-menu">
         <div class="navbar-start">
           <Link className="navbar-item" to="/">
             Home
@@ -24,9 +35,7 @@ const Navigation = () => {
         <div class="navbar-end">
           <div class="navbar-item">
             <div class="buttons">
-              <a class="button is-primary">
-                <strong>Sign up</strong>
-              </a>
+              <a class="button is-primary">Sign up</a>
               <a class="button is-light">Log in</a>
             </div>
           </div>
