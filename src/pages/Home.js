@@ -1,21 +1,37 @@
+import Navigation from "../components/Navigation";
+import splashImage from "../images/street-view-color-4x3.jpg";
 import "../styles/Home.css";
 
 const Home = () => {
   return (
-    <div classname="main">
-      <div className="buttons">
-        <button class="button is-primary">Primary</button>
-        <button class="button is-link">Link</button>
-        <button class="button is-info">Info</button>
-        <button class="button is-success">Success</button>
-        <button class="button is-warning">Warning</button>
-        <button class="button is-danger">Danger</button>
-        <button class="button is-black">Black</button>
-        <button class="button is-white">White</button>
-        <button class="button is-dark">Dark</button>
-        <button class="button is-light">Light</button>
+    <section class="hero is-fullheight is-default is-bold">
+      <div class="hero-head has-background-white">
+        <Navigation></Navigation>
       </div>
-    </div>
+      <div class="hero-body">
+        <div class="container has-text-centered">
+          <div class="columns">
+            <div class="column left">
+              <figure class="image is-4by3">
+                <img
+                  class="splash-img"
+                  src={splashImage}
+                  alt="Townhouse doors"
+                ></img>
+              </figure>
+            </div>
+            <div class="column right has-background-white">
+              <h1 class="title is-1">Hey, Neighbor!</h1>
+              <h2 class="subtitle is-4">Got a cup of sugar I can borrow?</h2>
+              <br />
+              <p class="has-text-centered">
+                <a class="button is-medium is-info">Learn more</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
 
