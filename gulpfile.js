@@ -5,11 +5,11 @@ const rename = require("gulp-rename");
 const cleanCSS = require("gulp-clean-css");
 const autoPrefix = require("gulp-autoprefixer");
 const concatenate = require("gulp-concat");
+const imagemin = require("gulp-imagemin");
 
 const sassFiles = ["./src/sass/*.s?ss"];
 const jsFiles = ["./src/js/*.js"];
-// TODO minify images for optimization
-// const imageFiles = ["./src/images/*.+(png|jpg|gif)"]
+const imageFiles = ["./src/images/*.+(png|jpg|gif|svg)"];
 
 gulp.task("sass", () => {
   return gulp
@@ -33,11 +33,19 @@ gulp.task("js", () => {
     .pipe(gulp.dest("./public/js/"));
 });
 
-gulp.task("build", gulp.parallel(["sass", "js"]));
+gulp.task("images", () => {
+  return gulp
+    .src(imageFiles)
+    .pipe(imagemin())
+    .pipe(gulp.dest("./public/images/"));
+});
+
+gulp.task("build", gulp.parallel(["sass", "js", "images"]));
 
 gulp.task("watch", (done) => {
   gulp.watch(sassFiles, gulp.series("sass"));
   gulp.watch(jsFiles, gulp.series("js"));
+  gulp.watch(imageFiles, gulp.series("images"));
   done();
 });
 

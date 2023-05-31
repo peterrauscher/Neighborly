@@ -2,7 +2,11 @@ import logo from "../images/logo-text.svg";
 
 const Navigation = () => {
   return (
-    <nav class="navbar" role="navigation" aria-label="navigation menu">
+    <nav
+      class="navbar is-fixed-top"
+      role="navigation"
+      aria-label="navigation menu"
+    >
       <div class="container">
         <div class="navbar-brand">
           <a className="navbar-item" href="/">
@@ -30,22 +34,19 @@ const Navigation = () => {
               <a className="navbar-item" href="/">
                 Home
               </a>
-              <a className="navbar-item" href="/about">
-                About
-              </a>
               {/* Only show this if the user is logged in */}
               <a className="navbar-item" href="/feed">
                 Feed
               </a>
               <div class="navbar-item">
                 <div class="buttons">
-                  <a
-                    href="/register"
-                    class="button is-rounded is-dark is-outlined"
-                  >
+                  <a href="/register" class="button is-rounded is-info">
                     Sign up
                   </a>
-                  <a href="/login" class="button is-rounded is-light">
+                  <a
+                    href="/login"
+                    class="button is-rounded is-success is-outlined"
+                  >
                     Log in
                   </a>
                 </div>

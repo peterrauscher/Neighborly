@@ -12,13 +12,68 @@ $orange: #f26419;
 $yellow: #f6ae2d;
 $family-sans-serif: "Open Sans", sans-serif;
 
-.splash-img {
-  border: 1px solid #ccc;
-  border-radius: 0.5vw;
+.hero-fig {
+}
+
+.hero-img {
+  max-height: 33vw;
+  max-width: 33vw;
+  // border: 0.5vh solid $white-ter;
+  // border-radius: 2vw;
+  // box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08);
+}
+
+.home-hero {
+  background-color: $green;
+}
+
+.max-quarter {
+  max-width: 33vh;
+  max-height: 33vh;
+}
+
+.benefits {
+  background-color: $background;
+}
+
+.section.benefits .box {
+  height: 100%;
+  border-radius: 3vh;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08);
+}
+
+.has-image-centered {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .has-background-green {
   background-color: $green;
+}
+
+.has-background-default {
+  background-color: $background;
+}
+
+.is-bold {
+  font-weight: bold;
+}
+
+.bold-button {
+  border-width: 4px;
+}
+
+.footer .menu p {
+  color: $black;
+}
+
+.footer .menu a {
+  color: $grey-dark;
+}
+
+.footer .menu a:hover {
+  color: $grey-dark;
+  text-decoration: underline;
 }
 
 body {
