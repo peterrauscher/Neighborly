@@ -1,0 +1,155 @@
+@charset "utf-8";
+@import "../../node_modules/bulma/bulma.sass";
+@import url("https://fonts.googleapis.com/css?family=Open+Sans");
+
+$bg: #6a994e;
+
+$blue: #33658a;
+$cyan: #86bbd8;
+$dark-green: #386641;
+$green: #758e4f;
+$orange: #f26419;
+$yellow: #f6ae2d;
+$family-sans-serif: "Open Sans", sans-serif;
+
+.hero-fig {
+}
+
+.hero-img {
+  max-height: 33vw;
+  max-width: 33vw;
+  // border: 0.5vh solid $white-ter;
+  // border-radius: 2vw;
+  // box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08);
+}
+
+.home-hero {
+  background-color: $green;
+}
+
+.max-quarter {
+  max-width: 33vh;
+  max-height: 33vh;
+}
+
+.benefits {
+  background-color: $background;
+}
+
+.section.benefits .box {
+  height: 100%;
+  border-radius: 3vh;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08);
+}
+
+.has-image-centered {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.has-background-green {
+  background-color: $green;
+}
+
+.has-background-default {
+  background-color: $background;
+}
+
+.is-bold {
+  font-weight: bold;
+}
+
+.bold-button {
+  border-width: 4px;
+}
+
+.footer .menu p {
+  color: $black;
+}
+
+.footer .menu a {
+  color: $grey-dark;
+}
+
+.footer .menu a:hover {
+  color: $grey-dark;
+  text-decoration: underline;
+}
+
+body {
+  height: 100vh;
+  background-color: $green;
+}
+
+.field:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.register {
+  margin-top: 10rem;
+  background: white;
+  border-radius: 10px;
+}
+
+.left,
+.right {
+  padding: 4.5rem;
+}
+
+.left {
+  border-right: 5px solid $green;
+}
+
+.left .title {
+  font-weight: 800;
+  letter-spacing: -2px;
+}
+
+.left .colored {
+  color: $bg;
+  font-weight: 500;
+  margin-top: 1rem !important;
+  letter-spacing: -1px;
+}
+
+.left p {
+  color: $text;
+  font-size: 1.15rem;
+}
+
+.right .title {
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.right .description {
+  margin-top: 1rem;
+  margin-bottom: 1rem !important;
+  color: $text;
+  font-size: 1.15rem;
+}
+
+.right small {
+  color: $text;
+}
+
+input {
+  font-size: 1rem;
+}
+
+input:focus {
+  border-color: $green !important;
+  box-shadow: 0 0 0 1px $green !important;
+}
+
+.link {
+  color: $cyan;
+}
+
+.link:hover {
+  color: $blue;
+}
+
+.copyright {
+  color: $grey-dark;
+}
