@@ -12,16 +12,16 @@ const Navigation = () => {
               src={logo}
             />
           </a>
-          <span
-            class="navbar-burger"
-            aria-label="navigation menu for mobile devices"
+          <button
+            class="navbar-burger burger"
+            aria-label="navigation menu dropdown"
             aria-expanded="false"
             data-target="topNavigation"
           >
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
-          </span>
+          </button>
         </div>
         <div id="topNavigation" class="navbar-menu">
           <div class="navbar-start"></div>
@@ -39,10 +39,13 @@ const Navigation = () => {
               </a>
               <div class="navbar-item">
                 <div class="buttons">
-                  <a href="/register" class="button is-primary">
-                    <strong>Sign up</strong>
+                  <a
+                    href="/register"
+                    class="button is-rounded is-dark is-outlined"
+                  >
+                    Sign up
                   </a>
-                  <a href="/login" class="button is-light">
+                  <a href="/login" class="button is-rounded is-light">
                     Log in
                   </a>
                 </div>

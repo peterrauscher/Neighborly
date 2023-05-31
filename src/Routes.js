@@ -9,10 +9,12 @@ const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     // errorElement: <Error />,
-    children: [{ index: true, element: <Home /> }],
+    children: [
+      { index: true, element: <Home /> },
+      { path: "register", element: <SignUp /> },
+      { path: "login", element: <Login /> },
+    ],
   },
-  { path: "register", element: <SignUp /> },
-  { path: "login", element: <Login /> },
 ]);
 
 export default router;

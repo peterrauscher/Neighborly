@@ -1,0 +1,100 @@
+@charset "utf-8";
+@import "../../node_modules/bulma/bulma.sass";
+@import url("https://fonts.googleapis.com/css?family=Open+Sans");
+
+$bg: #6a994e;
+
+$blue: #33658a;
+$cyan: #86bbd8;
+$dark-green: #386641;
+$green: #758e4f;
+$orange: #f26419;
+$yellow: #f6ae2d;
+$family-sans-serif: "Open Sans", sans-serif;
+
+.splash-img {
+  border: 1px solid #ccc;
+  border-radius: 0.5vw;
+}
+
+.has-background-green {
+  background-color: $green;
+}
+
+body {
+  height: 100vh;
+  background-color: $green;
+}
+
+.field:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.register {
+  margin-top: 10rem;
+  background: white;
+  border-radius: 10px;
+}
+
+.left,
+.right {
+  padding: 4.5rem;
+}
+
+.left {
+  border-right: 5px solid $green;
+}
+
+.left .title {
+  font-weight: 800;
+  letter-spacing: -2px;
+}
+
+.left .colored {
+  color: $bg;
+  font-weight: 500;
+  margin-top: 1rem !important;
+  letter-spacing: -1px;
+}
+
+.left p {
+  color: $text;
+  font-size: 1.15rem;
+}
+
+.right .title {
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.right .description {
+  margin-top: 1rem;
+  margin-bottom: 1rem !important;
+  color: $text;
+  font-size: 1.15rem;
+}
+
+.right small {
+  color: $text;
+}
+
+input {
+  font-size: 1rem;
+}
+
+input:focus {
+  border-color: $green !important;
+  box-shadow: 0 0 0 1px $green !important;
+}
+
+.link {
+  color: $cyan;
+}
+
+.link:hover {
+  color: $blue;
+}
+
+.copyright {
+  color: $grey-dark;
+}
