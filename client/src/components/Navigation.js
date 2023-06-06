@@ -1,6 +1,38 @@
+import { useState } from "react";
 import logo from "../images/logo-text.svg";
 
 const Navigation = () => {
+  const [navigationActive, setNavigationActive] = useState(false);
+
+  const toggleNavigationMobile = () => setNavigationActive(!navigationActive);
+
+  const accountButtons = navigationActive ? (
+    <>
+      <a href="/register" className="navbar-item" display>
+        Sign up
+      </a>
+      <a href="/login" className="navbar-item">
+        Log in
+      </a>
+    </>
+  ) : (
+    <>
+      <div className="navbar-item pr-2">
+        <a href="/register" className="button is-info" display>
+          Sign up
+        </a>
+      </div>
+      <div className="navbar-item pl-2">
+        <a
+          href="/login"
+          className="button is-primary is-outlined has-text-bold"
+        >
+          Log in
+        </a>
+      </div>
+    </>
+  );
+
   return (
     <nav
       class="navbar is-fixed-top"
@@ -17,41 +49,31 @@ const Navigation = () => {
             />
           </a>
           <button
-            class="navbar-burger burger"
+            class={`navbar-burger ${navigationActive ? "is-active" : ""}`}
             aria-label="navigation menu dropdown"
             aria-expanded="false"
             data-target="topNavigation"
+            onClick={toggleNavigationMobile}
           >
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
           </button>
         </div>
-        <div id="topNavigation" class="navbar-menu">
-          <div class="navbar-start"></div>
+        <div
+          id="topNavigation"
+          class={`navbar-menu ${
+            navigationActive ? "is-active has-text-right" : ""
+          }`}
+        >
           <div class="navbar-end">
-            <div class="tabs is-right">
-              <a className="navbar-item" href="/">
-                Home
-              </a>
-              {/* Only show this if the user is logged in */}
-              <a className="navbar-item" href="/feed">
-                Feed
-              </a>
-              <div class="navbar-item">
-                <div class="buttons">
-                  <a href="/register" class="button is-rounded is-info">
-                    Sign up
-                  </a>
-                  <a
-                    href="/login"
-                    class="button is-rounded is-success is-outlined"
-                  >
-                    Log in
-                  </a>
-                </div>
-              </div>
-            </div>
+            <a className="navbar-item" href="/">
+              Home
+            </a>
+            <a className="navbar-item" href="/feed">
+              Feed
+            </a>
+            {accountButtons}
           </div>
         </div>
       </div>

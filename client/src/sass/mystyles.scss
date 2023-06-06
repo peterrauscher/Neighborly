@@ -153,3 +153,13 @@ input:focus {
 .copyright {
   color: $grey-dark;
 }
+
+button.link {
+  border: none;
+  background-color: transparent;
+  color: $link;
+}
+
+button.link:hover {
+  color: $link-hover;
+}

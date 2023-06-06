@@ -1,3 +1,5 @@
+const resetPassword = () => {};
+
 const Login = () => {
   return (
     <section class="container">
@@ -41,9 +43,14 @@ const Login = () => {
                 </button>
                 <hr />
                 <small class="is-block">
-                  <a id="password-reset" class="link is-bold">
+                  <button
+                    type="button"
+                    id="password-reset"
+                    class="link is-bold"
+                    onClick={resetPassword}
+                  >
                     Forgot password?
-                  </a>
+                  </button>
                 </small>
                 <br />
                 <small class="is-block has-text-grey-dark">
