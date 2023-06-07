@@ -1,0 +1,19 @@
+{
+  "name": "neighborly",
+  "version": "1.0.0",
+  "description": "Monorepo",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"cd client && npm start\" \"cd server && npm run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peterrauscher/Neighborly.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/peterrauscher/Neighborly/issues"
+  },
+  "homepage": "https://github.com/peterrauscher/Neighborly#readme"
+}

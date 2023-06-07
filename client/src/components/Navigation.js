@@ -23,10 +23,7 @@ const Navigation = () => {
         </a>
       </div>
       <div className="navbar-item pl-2">
-        <a
-          href="/login"
-          className="button is-primary is-outlined has-text-bold"
-        >
+        <a href="/login" className="button is-primary is-outlined">
           Log in
         </a>
       </div>
