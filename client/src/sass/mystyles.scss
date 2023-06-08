@@ -14,9 +14,12 @@ $family-sans-serif: "Open Sans", sans-serif;
 
 // GLOBAL STYLES
 
+html {
+  background-color: $green;
+}
+
 body {
   height: 100vh;
-  background-color: $green;
 }
 
 // HOME PAGE
@@ -170,4 +173,14 @@ button.link {
 
 button.link:hover {
   color: $link-hover;
+}
+
+//ERROR PAGE
+.error-img {
+  max-width: 256px;
+  height: auto;
+}
+
+.error-box {
+  max-width: 50vw;
 }
