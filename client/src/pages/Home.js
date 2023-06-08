@@ -119,7 +119,7 @@ const Home = () => {
           </p>
           <a
             href="/register"
-            class="button is-light is-outlined is-large is-bold bold-button"
+            class="button is-light is-outlined is-large has-text-bold bold-button"
           >
             Sign up for free
           </a>
