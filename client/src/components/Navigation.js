@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import logo from "../images/logo-text.svg";
 
 const Navigation = () => {
@@ -8,45 +9,45 @@ const Navigation = () => {
 
   const accountButtons = navigationActive ? (
     <>
-      <a href="/register" className="navbar-item" display>
+      <Link to="/register" className="navbar-item">
         Sign up
-      </a>
-      <a href="/login" className="navbar-item">
+      </Link>
+      <Link to="/login" className="navbar-item">
         Log in
-      </a>
+      </Link>
     </>
   ) : (
     <>
       <div className="navbar-item pr-2">
-        <a href="/register" className="button is-info" display>
+        <Link to="/register" className="button is-info">
           Sign up
-        </a>
+        </Link>
       </div>
       <div className="navbar-item pl-2">
-        <a href="/login" className="button is-primary is-outlined">
+        <Link to="/login" className="button is-primary is-outlined">
           Log in
-        </a>
+        </Link>
       </div>
     </>
   );
 
   return (
     <nav
-      class="navbar is-fixed-top"
+      className="navbar is-fixed-top"
       role="navigation"
       aria-label="navigation menu"
     >
-      <div class="container">
-        <div class="navbar-brand">
-          <a className="navbar-item" href="/">
+      <div className="container">
+        <div className="navbar-brand">
+          <Link to="/" className="navbar-item">
             <img
               alt="Neighborly Logo"
               aria-label="Neighborly Logo"
               src={logo}
             />
-          </a>
+          </Link>
           <button
-            class={`navbar-burger ${navigationActive ? "is-active" : ""}`}
+            className={`navbar-burger ${navigationActive ? "is-active" : ""}`}
             aria-label="navigation menu dropdown"
             aria-expanded="false"
             data-target="topNavigation"
@@ -59,17 +60,17 @@ const Navigation = () => {
         </div>
         <div
           id="topNavigation"
-          class={`navbar-menu ${
+          className={`navbar-menu ${
             navigationActive ? "is-active has-text-right" : ""
           }`}
         >
-          <div class="navbar-end">
-            <a className="navbar-item" href="/">
+          <div className="navbar-end">
+            <Link to="/" className="navbar-item">
               Home
-            </a>
-            <a className="navbar-item" href="/feed">
+            </Link>
+            <Link to="/feed" className="navbar-item">
               Feed
-            </a>
+            </Link>
             {accountButtons}
           </div>
         </div>

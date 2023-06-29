@@ -10362,7 +10362,6 @@ body {
 }
 
 .left .title {
-  font-weight: 800;
   letter-spacing: -1px;
 }
 
@@ -10378,7 +10377,6 @@ body {
 }
 
 .right .title {
-  font-weight: bold;
   letter-spacing: -1px;
 }
 
@@ -10446,4 +10444,22 @@ button.link:hover {
 
 .error-box {
   max-width: 50vw;
+}
+
+.loader-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: #fff;
+  transition: opacity 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+}
+.loader-wrapper .loader {
+  height: 80px;
+  width: 80px;
 }

@@ -1,22 +1,24 @@
+import { Link } from "react-router-dom";
+
 const Home = () => {
   return (
     <>
-      <section class="hero home-hero">
-        <div class="hero-body">
-          <div class="container">
-            <div class="columns is-flex is-vcentered is-narrow">
-              <div class="column content is-two-fifths">
-                <p class="title is-1 has-text-white-ter">Hey, Neighbor!</p>
-                <p class="subtitle is-4 has-text-white-ter">
+      <section className="hero home-hero">
+        <div className="hero-body">
+          <div className="container">
+            <div className="columns is-flex is-vcentered is-narrow">
+              <div className="column content is-two-fifths">
+                <p className="title is-1 has-text-white-ter">Hey, Neighbor!</p>
+                <p className="subtitle is-4 has-text-white-ter">
                   Unleash the power of sharing and strengthen your community
                   with Neighborly - the platform connecting neighbors for
                   responsible borrowing, lending, and trading.
                 </p>
               </div>
-              <div class="column">
-                <figure class="image container hero-fig">
+              <div className="column">
+                <figure className="image container hero-fig">
                   <img
-                    class="hero-img has-image-centered"
+                    className="hero-img has-image-centered"
                     alt="Colorful row of houses"
                     src="/images/neighborhood.png"
                   ></img>
@@ -26,81 +28,81 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section class="hero pt-6 pb-0 has-background-default">
-        <div class="container has-text-centered">
-          <p class="title is-1">Why us?</p>
-          <p class="subtitle is-3">
+      <section className="hero pt-6 pb-0 has-background-default">
+        <div className="container has-text-centered">
+          <p className="title is-1">Why us?</p>
+          <p className="subtitle is-3">
             There's more than a few reasons to connect with your community on
             Neighborly
           </p>
         </div>
       </section>
-      <section class="section benefits">
-        <div class="container">
-          <div class="columns is-centered">
-            <div class="column is-half has-text-centered">
-              <div class="box">
-                <figure class="image my-4">
+      <section className="section benefits">
+        <div className="container">
+          <div className="columns is-centered">
+            <div className="column is-half has-text-centered">
+              <div className="box">
+                <figure className="image my-4">
                   <img
-                    class="max-quarter has-image-centered"
+                    className="max-quarter has-image-centered"
                     src="/images/foster-community.png"
                     alt="People walking together"
                   ></img>
                 </figure>
-                <p class="title is-3">Foster Community</p>
-                <p class="subtitle is-5">
+                <p className="title is-3">Foster Community</p>
+                <p className="subtitle is-5">
                   Connect with neighbors, have meaningful interactions, and
                   build trust through responsible borrowing, lending, and
                   trading.
                 </p>
               </div>
             </div>
-            <div class="column is-half has-text-centered">
-              <div class="box">
-                <figure class="image my-4">
+            <div className="column is-half has-text-centered">
+              <div className="box">
+                <figure className="image my-4">
                   <img
-                    class="max-quarter has-image-centered"
+                    className="max-quarter has-image-centered"
                     src="/images/live-sustainably.png"
                     alt="Man and woman recycling"
                   ></img>
                 </figure>
-                <p class="title is-3">Live Sustainably</p>
-                <p class="subtitle is-5">
+                <p className="title is-3">Live Sustainably</p>
+                <p className="subtitle is-5">
                   Help save the planet by reducing your individual consumption
                   and minimizing waste through the use of shared resources.
                 </p>
               </div>
             </div>
           </div>
-          <div class="columns is-centered">
-            <div class="column is-half has-text-centered">
-              <div class="box">
-                <figure class="image my-4">
+          <div className="columns is-centered">
+            <div className="column is-half has-text-centered">
+              <div className="box">
+                <figure className="image my-4">
                   <img
-                    class="max-quarter has-image-centered"
+                    className="max-quarter has-image-centered"
                     src="/images/save-money.png"
                     alt="Piggy bank"
                   ></img>
                 </figure>
-                <p class="title is-3">Save Money</p>
-                <p class="subtitle is-5">
+                <p className="title is-3">Save Money</p>
+                <p className="subtitle is-5">
                   Keep more money in your pocket by skipping on big purchases
                   for things you'll only use once. Be honest, when's the last
                   time you used your leafblower?
                 </p>
               </div>
             </div>
-            <div class="column is-half has-text-centered">
-              <div class="box">
-                <figure class="image my-4">
+            <div className="column is-half has-text-centered">
+              <div className="box">
+                <figure className="image my-4">
                   <img
-                    class="max-quarter has-image-centered"
+                    className="max-quarter has-image-centered"
                     src="/images/find-space.png"
                     alt="Man and woman recycling"
                   ></img>
                 </figure>
-                <p class="title is-3">Find Space</p>
-                <p class="subtitle is-5">
+                <p className="title is-3">Find Space</p>
+                <p className="subtitle is-5">
                   Make the most of your square footage. Beyond homegoods, you
                   can find or list unused space within your community.
                 </p>
@@ -109,39 +111,41 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section class="hero p-6 has-background-green">
-        <div class="container has-text-centered ">
-          <p class="title is-1 is-spaced has-text-light">
+      <section className="hero p-6 has-background-green">
+        <div className="container has-text-centered ">
+          <p className="title is-1 is-spaced has-text-light">
             Plus, it's completely free.
           </p>
-          <p class="subtitle is-3 has-text-white">
+          <p className="subtitle is-3 has-text-white">
             There's absolutely nothing to lose. So what are you waiting for?
           </p>
-          <a
-            href="/register"
-            class="button is-light is-outlined is-large has-text-bold bold-button"
+          <Link
+            to="/register"
+            className="button is-light is-outlined is-large has-text-bold bold-button"
           >
             Sign up for free
-          </a>
+          </Link>
         </div>
       </section>
-      <footer class="footer pb-6">
-        <div class="container has-text-centered">
-          <aside class="menu">
-            <p class="menu-label">About</p>
-            <ul class="menu-list">
+      <footer className="footer pb-6">
+        <div className="container has-text-centered">
+          <aside className="menu">
+            <p className="menu-label">About</p>
+            <ul className="menu-list">
               <li>
-                <a href="https://github.com/peterrauscher/Neighborly">Github</a>
+                <Link to="https://github.com/peterrauscher/Neighborly">
+                  Github
+                </Link>
               </li>
               <li>
-                <a href="https://devpost.com/software/neighborly-42ghs1">
+                <Link to="https://devpost.com/software/neighborly-42ghs1">
                   Devpost
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="https://www.linkedin.com/in/peter-rauscher">
+                <Link to="https://www.linkedin.com/in/peter-rauscher">
                   Linkedin (I'm seeking a job)
-                </a>
+                </Link>
               </li>
             </ul>
           </aside>

@@ -8,9 +8,9 @@ const DefaultErrorPage = () => {
       <section className="hero is-fullheight-with-navbar is-bold">
         <div className="hero-body">
           <div className="columns">
-            <div class="column">
+            <div className="column">
               <div className="box">
-                <figure class="image mx-auto my-6">
+                <figure className="image mx-auto my-6">
                   <img
                     className="error-img mx-auto"
                     src={errorImage}
