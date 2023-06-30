@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { UserContext } from "../contexts/user.context";
 
@@ -7,47 +7,47 @@ const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, fetchUser, emailPasswordLogin } = useContext(UserContext);
+  const emailRef = useRef();
+  const passwordRef = useRef();
+  const formRef = useRef();
 
   const loginUser = async () => {
     await emailPasswordLogin(formData.email, formData.password);
     setFormData({});
+    formRef.current.reset();
     handleRedirect();
   };
 
   const handleState = (e) => {
-    e.preventDefault();
     setFormData((data) => ({ ...data, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(e);
-    setFormData({
-      email: e.target.email.value,
-      password: e.target.password.value,
-    });
-    e.target.email.reset();
-    e.target.password.reset();
     loginUser();
   };
 
   const handleRedirect = () => {
     const goTo = location.search.replace("?redirect=", "");
-    navigate(goTo ? goTo : "/", { replace: true });
+    navigate(goTo ? goTo : "/");
   };
 
   const resetPassword = () => {};
 
-  const loadUser = async () => {
-    if (!user) {
-      const fetchedUser = await fetchUser();
-      if (fetchedUser) handleRedirect();
-    }
-  };
-
   useEffect(() => {
+    const loadUser = async () => {
+      if (!user) {
+        const fetchedUser = await fetchUser();
+        if (fetchedUser) handleRedirect();
+      }
+    };
     loadUser();
   }, [user]);
+
+  useEffect(() => {
+    emailRef.current.addEventListener("input", handleState);
+    passwordRef.current.addEventListener("input", handleState);
+  });
 
   return (
     <section className="container has-background-green">
@@ -56,14 +56,15 @@ const Login = () => {
           <div className="login columns">
             <div className="column">
               <h1 className="title is-3">Welcome back</h1>
-              <form onSubmit={handleSubmit}>
+              <form ref={formRef} onSubmit={handleSubmit}>
                 <div className="field">
                   <div className="control">
                     <input
                       className="input is-medium"
                       type="email"
+                      name="email"
                       placeholder="Email"
-                      onChange={handleState}
+                      ref={emailRef}
                     />
                   </div>
                 </div>
@@ -73,8 +74,9 @@ const Login = () => {
                     <input
                       className="input is-medium"
                       type="password"
+                      name="password"
                       placeholder="Password"
-                      onChange={handleState}
+                      ref={passwordRef}
                     />
                   </div>
                 </div>

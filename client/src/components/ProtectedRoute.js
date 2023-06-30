@@ -1,5 +1,6 @@
 import { useContext, useEffect } from "react";
-import { Navigate, Outlet, useLocation } from "react-router";
+import { Navigate, useLocation } from "react-router";
+import { Outlet } from "react-router-dom";
 import { UserContext } from "../contexts/user.context";
 import Loading from "./Loading";
 
@@ -8,14 +9,14 @@ const ProtectedRoute = () => {
   const location = useLocation();
   const redirectOnLogin = encodeURI(location.pathname);
 
-  useEffect(() => {}, [user, userLoading]);
-
   if (userLoading) return <Loading />;
-  return user ? (
-    <Outlet />
-  ) : (
-    <Navigate to={`/login?redirect=${redirectOnLogin}`} />
-  );
+  else {
+    return user ? (
+      <Outlet />
+    ) : (
+      <Navigate to={`/login?redirect=${redirectOnLogin}`} />
+    );
+  }
 };
 
 export default ProtectedRoute;

@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "../contexts/user.context";
 
-const SignUp = () => {
+const Register = () => {
   const { user, emailPasswordSignup } = useContext(UserContext);
   const location = useLocation();
   const navigate = useNavigate();
@@ -27,7 +27,6 @@ const SignUp = () => {
   };
 
   const handleState = (e) => {
-    console.log(e.target.value);
     setFormData((data) => ({ ...data, [e.target.name]: e.target.value }));
   };
 
@@ -156,4 +155,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default Register;

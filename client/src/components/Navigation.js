@@ -1,35 +1,42 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../images/logo-text.svg";
+import { UserContext } from "../contexts/user.context";
 
 const Navigation = () => {
   const [navigationActive, setNavigationActive] = useState(false);
+  const { user, userLoading } = useContext(UserContext);
 
   const toggleNavigationMobile = () => setNavigationActive(!navigationActive);
 
-  const accountButtons = navigationActive ? (
-    <>
-      <Link to="/register" className="navbar-item">
-        Sign up
-      </Link>
-      <Link to="/login" className="navbar-item">
-        Log in
-      </Link>
-    </>
-  ) : (
-    <>
-      <div className="navbar-item pr-2">
-        <Link to="/register" className="button is-info">
+  let accountButtons;
+  if (navigationActive) {
+    accountButtons = (
+      <>
+        <Link to="/register" className="navbar-item">
           Sign up
         </Link>
-      </div>
-      <div className="navbar-item pl-2">
-        <Link to="/login" className="button is-primary is-outlined">
+        <Link to="/login" className="navbar-item">
           Log in
         </Link>
-      </div>
-    </>
-  );
+      </>
+    );
+  } else {
+    accountButtons = (
+      <>
+        <div className="navbar-item pr-2">
+          <Link to="/register" className="button is-info">
+            Sign up
+          </Link>
+        </div>
+        <div className="navbar-item pl-2">
+          <Link to="/login" className="button is-primary is-outlined">
+            Log in
+          </Link>
+        </div>
+      </>
+    );
+  }
 
   return (
     <nav
@@ -37,42 +44,36 @@ const Navigation = () => {
       role="navigation"
       aria-label="navigation menu"
     >
-      <div className="container">
-        <div className="navbar-brand">
-          <Link to="/" className="navbar-item">
-            <img
-              alt="Neighborly Logo"
-              aria-label="Neighborly Logo"
-              src={logo}
-            />
-          </Link>
-          <button
-            className={`navbar-burger ${navigationActive ? "is-active" : ""}`}
-            aria-label="navigation menu dropdown"
-            aria-expanded="false"
-            data-target="topNavigation"
-            onClick={toggleNavigationMobile}
-          >
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </button>
-        </div>
-        <div
-          id="topNavigation"
-          className={`navbar-menu ${
-            navigationActive ? "is-active has-text-right" : ""
-          }`}
+      <div className="navbar-brand">
+        <Link to="/" className="navbar-item">
+          <img alt="Neighborly Logo" aria-label="Neighborly Logo" src={logo} />
+        </Link>
+        <button
+          className={`navbar-burger ${navigationActive ? "is-active" : ""}`}
+          aria-label="navigation menu dropdown"
+          aria-expanded="false"
+          data-target="topNavigation"
+          onClick={toggleNavigationMobile}
         >
-          <div className="navbar-end">
-            <Link to="/" className="navbar-item">
-              Home
-            </Link>
-            <Link to="/feed" className="navbar-item">
-              Feed
-            </Link>
-            {accountButtons}
-          </div>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </button>
+      </div>
+      <div
+        id="topNavigation"
+        className={`navbar-menu ${
+          navigationActive ? "is-active has-text-right" : ""
+        }`}
+      >
+        <div className="navbar-end">
+          <Link to="/" className="navbar-item">
+            Home
+          </Link>
+          <Link to="/feed" className="navbar-item">
+            Feed
+          </Link>
+          {accountButtons}
         </div>
       </div>
     </nav>
