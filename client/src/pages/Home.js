@@ -3,16 +3,18 @@ import { Link } from "react-router-dom";
 const Home = () => {
   return (
     <>
-      <section className="hero home-hero">
+      <section className="hero is-medium home-hero">
         <div className="hero-body">
           <div className="container">
             <div className="columns is-flex is-vcentered is-narrow">
               <div className="column content is-two-fifths">
-                <p className="title is-1 has-text-white-ter">Hey, Neighbor!</p>
+                <p className="title is-1 has-text-white-ter">
+                  Welcome To The Neighborhood
+                </p>
                 <p className="subtitle is-4 has-text-white-ter">
                   Unleash the power of sharing and strengthen your community
-                  with Neighborly - the platform connecting neighbors for
-                  responsible borrowing, lending, and trading.
+                  with Neighborly. Connect with neighbors to borrow, lend, and
+                  trade responsibly.
                 </p>
               </div>
               <div className="column">
@@ -30,7 +32,7 @@ const Home = () => {
       </section>
       <section className="hero pt-6 pb-0 has-background-default">
         <div className="container has-text-centered">
-          <p className="title is-1">Why us?</p>
+          <p className="title is-1 mb-6">Why us?</p>
           <p className="subtitle is-3">
             There's more than a few reasons to connect with your community on
             Neighborly
