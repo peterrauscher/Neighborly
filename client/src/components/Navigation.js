@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Link } from "react-router-dom";
-import { NavContext } from "../contexts/nav.context";
-import { UserContext } from "../contexts/user.context";
+import { NavContext } from "../contexts/NavContext";
+import { UserContext } from "../contexts/UserContext";
 import logo from "../images/logo-text.png";
 
 const Navigation = () => {

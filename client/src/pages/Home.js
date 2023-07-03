@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 const Home = () => {
   return (
     <>
-      <section className="hero is-medium home-hero">
+      <section className="hero is-fullheight-with-navbar home-hero">
         <div className="hero-body">
           <div className="container">
             <div className="columns is-flex is-vcentered is-narrow">
@@ -16,9 +16,17 @@ const Home = () => {
                   with Neighborly. Connect with neighbors to borrow, lend, and
                   trade responsibly.
                 </p>
-                <Link to="/register" className="button is-white is-outlined">
-                  Get started
-                </Link>
+                <div className="buttons">
+                  <a href="#learn-more" className="button is-white is-rounded">
+                    Learn More
+                  </a>
+                  <Link
+                    to="/register"
+                    className="button is-white is-outlined is-rounded"
+                  >
+                    Get started
+                  </Link>
+                </div>
               </div>
               <div className="column">
                 <figure className="image container hero-fig">
@@ -33,16 +41,16 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section className="hero pt-6 pb-0">
+      <section className="hero has-background-default pt-6">
         <div className="container has-text-centered">
-          <p className="title is-1 mb-6">Why us?</p>
-          <p className="subtitle is-3">
+          <p className="title is-2">Why us?</p>
+          <p className="subtitle is-5">
             There's more than a few reasons to connect with your community on
             Neighborly
           </p>
         </div>
       </section>
-      <section className="section benefits">
+      <section id="learn-more" className="section benefits">
         <div className="container">
           <div className="columns is-centered">
             <div className="column is-half has-text-centered">
@@ -118,13 +126,13 @@ const Home = () => {
       </section>
       <section className="hero p-6 call-to-action">
         <div className="container has-text-centered ">
-          <p className="title is-1 is-spaced">Plus, it's completely free.</p>
-          <p className="subtitle is-3">
+          <p className="title is-2 is-spaced">Ready to get started?</p>
+          <p className="subtitle is-5">
             There's absolutely nothing to lose. So what are you waiting for?
           </p>
           <Link
             to="/register"
-            className="button is-dark is-outlined is-large has-text-bold"
+            className="button is-dark is-outlined has-text-bold"
           >
             Sign up for free
           </Link>

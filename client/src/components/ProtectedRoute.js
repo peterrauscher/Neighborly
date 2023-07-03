@@ -1,7 +1,7 @@
 import { useContext, useEffect } from "react";
 import { Navigate, useLocation } from "react-router";
 import { Outlet } from "react-router-dom";
-import { UserContext } from "../contexts/user.context";
+import { UserContext } from "../contexts/UserContext";
 import Loading from "./Loading";
 
 const ProtectedRoute = () => {

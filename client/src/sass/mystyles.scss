@@ -21,6 +21,20 @@ body {
   font-family: Inter, sans-serif;
 }
 
+.title {
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+.section {
+  padding: 4rem 0;
+}
+
 // NAVIGATION
 
 .has-navbar-fixed-top {
@@ -45,6 +59,10 @@ body {
 
 // HOME PAGE
 
+.buttons {
+  margin-top: 2rem;
+}
+
 .is-flex {
   word-break: keep-all;
 }
@@ -65,7 +83,6 @@ body {
 
 .benefits {
   background-color: $background;
-  padding-bottom: 10vh;
 }
 
 .section.benefits .box {

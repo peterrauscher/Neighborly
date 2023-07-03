@@ -10291,6 +10291,20 @@ body {
   font-family: Inter, sans-serif;
 }
 
+.title {
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+.section {
+  padding: 4rem 0;
+}
+
 .has-navbar-fixed-top {
   padding-top: 58px;
 }
@@ -10309,6 +10323,10 @@ body {
 #navigation-logo {
   vertical-align: middle;
   height: 30px;
+}
+
+.buttons {
+  margin-top: 2rem;
 }
 
 .is-flex {
@@ -10331,7 +10349,6 @@ body {
 
 .benefits {
   background-color: #f4f4f4;
-  padding-bottom: 10vh;
 }
 
 .section.benefits .box {

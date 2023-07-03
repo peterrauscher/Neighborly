@@ -1,8 +1,8 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Layout from "../components/Layout";
 import ProtectedRoute from "../components/ProtectedRoute";
-import { NavProvider } from "../contexts/nav.context.js";
-import { UserProvider } from "../contexts/user.context.js";
+import { NavProvider } from "../contexts/NavContext";
+import { UserProvider } from "../contexts/UserContext";
 import DefaultErrorPage from "../pages/DefaultErrorPage";
 import Feed from "../pages/Feed";
 import Home from "../pages/Home";

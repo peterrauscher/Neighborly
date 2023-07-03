@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { UserContext } from "../contexts/user.context";
+import { UserContext } from "../contexts/UserContext";
 
 const Register = () => {
   const { user, emailPasswordSignup } = useContext(UserContext);
