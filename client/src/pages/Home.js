@@ -16,6 +16,9 @@ const Home = () => {
                   with Neighborly. Connect with neighbors to borrow, lend, and
                   trade responsibly.
                 </p>
+                <Link to="/register" className="button is-white is-outlined">
+                  Get started
+                </Link>
               </div>
               <div className="column">
                 <figure className="image container hero-fig">
@@ -30,7 +33,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section className="hero pt-6 pb-0 has-background-default">
+      <section className="hero pt-6 pb-0">
         <div className="container has-text-centered">
           <p className="title is-1 mb-6">Why us?</p>
           <p className="subtitle is-3">
@@ -113,17 +116,15 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section className="hero p-6 has-background-green">
+      <section className="hero p-6 call-to-action">
         <div className="container has-text-centered ">
-          <p className="title is-1 is-spaced has-text-light">
-            Plus, it's completely free.
-          </p>
-          <p className="subtitle is-3 has-text-white">
+          <p className="title is-1 is-spaced">Plus, it's completely free.</p>
+          <p className="subtitle is-3">
             There's absolutely nothing to lose. So what are you waiting for?
           </p>
           <Link
             to="/register"
-            className="button is-light is-outlined is-large has-text-bold bold-button"
+            className="button is-dark is-outlined is-large has-text-bold"
           >
             Sign up for free
           </Link>

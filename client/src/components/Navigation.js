@@ -1,16 +1,16 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
+import { NavContext } from "../contexts/nav.context";
 import { UserContext } from "../contexts/user.context";
 import logo from "../images/logo-text.png";
 
 const Navigation = () => {
-  const [navigationActive, setNavigationActive] = useState(false);
+  const { isMobile, setIsMobile, isNavActive, setIsNavActive } =
+    useContext(NavContext);
   const { user, userLoading } = useContext(UserContext);
 
-  const toggleNavigationMobile = () => setNavigationActive(!navigationActive);
-
   let accountButtons;
-  if (navigationActive) {
+  if (isNavActive) {
     accountButtons = (
       <>
         <Link to="/register" className="navbar-item">
@@ -54,11 +54,13 @@ const Navigation = () => {
           />
         </Link>
         <button
-          className={`navbar-burger ${navigationActive ? "is-active" : ""}`}
+          className={`navbar-burger ${isNavActive ? "is-active" : ""}`}
           aria-label="navigation menu dropdown"
           aria-expanded="false"
           data-target="navigation-menu"
-          onClick={toggleNavigationMobile}
+          onClick={() => {
+            setIsNavActive(!isNavActive);
+          }}
         >
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
@@ -67,7 +69,7 @@ const Navigation = () => {
       </div>
       <div
         id="navigation-menu"
-        className={`navbar-menu ${navigationActive ? "is-active" : ""}`}
+        className={`navbar-menu ${isNavActive ? "is-active" : ""}`}
       >
         <div className="navbar-end">
           <Link to="/" className="navbar-item">

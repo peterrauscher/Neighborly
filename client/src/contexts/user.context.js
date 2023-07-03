@@ -12,7 +12,7 @@ export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [userLoading, setUserLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
   const [mongoClient, setMongoClient] = useState(null);
   const [userCollection, setUserCollection] = useState(null);
 

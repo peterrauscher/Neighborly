@@ -1,28 +1,31 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { UserProvider } from "../contexts/user.context.js";
-import Home from "../pages/Home";
-import Feed from "../pages/Feed";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import Layout from "../components/Layout";
 import ProtectedRoute from "../components/ProtectedRoute";
+import { NavProvider } from "../contexts/nav.context.js";
+import { UserProvider } from "../contexts/user.context.js";
+import DefaultErrorPage from "../pages/DefaultErrorPage";
+import Feed from "../pages/Feed";
+import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import DefaultErrorPage from "../pages/DefaultErrorPage";
-import Layout from "../components/Layout";
 
 const App = () => {
   return (
     <UserProvider>
       <Router>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="*" element={<DefaultErrorPage />} />
-          </Route>
-          <Route element={<ProtectedRoute />}>
-            <Route path="/feed" element={<Feed />} />
-          </Route>
-        </Routes>
+        <NavProvider>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="*" element={<DefaultErrorPage />} />
+            </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/feed" element={<Feed />} />
+            </Route>
+          </Routes>
+        </NavProvider>
       </Router>
     </UserProvider>
   );

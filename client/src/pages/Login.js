@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { UserContext } from "../contexts/user.context";
 
@@ -50,7 +50,7 @@ const Login = () => {
   });
 
   return (
-    <section className="container has-background-green">
+    <section className="container">
       <div className="hero is-fullheight-with-navbar">
         <div className="hero-body container has-text-centered">
           <div className="login columns">

@@ -8,11 +8,12 @@ $dark-green: #386641;
 $green: #758e4f;
 $orange: #f26419;
 $yellow: #f6ae2d;
+$background: #f4f4f4;
 
 // GLOBAL STYLES
 
 html {
-  background-color: $white;
+  background-color: $background;
 }
 
 body {
@@ -22,13 +23,13 @@ body {
 
 // NAVIGATION
 
-body.has-navbar-fixed-top,
-html.has-navbar-fixed-top {
-  padding-top: 42px;
+.has-navbar-fixed-top {
+  padding-top: 58px;
 }
 
 .navbar {
-  border-bottom: 1px solid #ebeaeb;
+  border-bottom: 2px solid #e8e8e8;
+  height: 58px;
 }
 
 .navbar-brand {
@@ -40,25 +41,6 @@ html.has-navbar-fixed-top {
 #navigation-logo {
   vertical-align: middle;
   height: 30px;
-}
-
-@media (min-width: 1024px) {
-  body.has-navbar-fixed-top,
-  html.has-navbar-fixed-top {
-    padding-top: 86px;
-  }
-
-  .navbar {
-    padding: 12px 0;
-  }
-
-  .navbar-brand {
-    padding: 16px;
-  }
-
-  #navigation-logo {
-    height: 42px;
-  }
 }
 
 // HOME PAGE
@@ -73,7 +55,7 @@ html.has-navbar-fixed-top {
 }
 
 .home-hero {
-  background-color: $green;
+  background-color: $dark-green;
 }
 
 .max-quarter {
@@ -93,21 +75,22 @@ html.has-navbar-fixed-top {
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08);
 }
 
+.call-to-action {
+  background-color: #fff;
+  color: #000;
+}
+
 .has-image-centered {
   margin-left: auto;
   margin-right: auto;
 }
 
 .has-background-green {
-  background-color: $green;
+  background-color: $dark-green;
 }
 
 .has-background-default {
   background-color: $background;
-}
-
-.bold-button {
-  border-width: 4px;
 }
 
 .footer .menu p {
@@ -246,4 +229,9 @@ button.link:hover {
     height: 80px;
     width: 80px;
   }
+}
+
+// FEED PAGE
+.feed {
+  padding: 20px;
 }

@@ -10283,7 +10283,7 @@ a.has-text-danger-dark:hover, a.has-text-danger-dark:focus {
 }
 
 html {
-  background-color: hsl(0, 0%, 100%);
+  background-color: #f4f4f4;
 }
 
 body {
@@ -10291,13 +10291,13 @@ body {
   font-family: Inter, sans-serif;
 }
 
-body.has-navbar-fixed-top,
-html.has-navbar-fixed-top {
-  padding-top: 42px;
+.has-navbar-fixed-top {
+  padding-top: 58px;
 }
 
 .navbar {
-  border-bottom: 1px solid #ebeaeb;
+  border-bottom: 2px solid #e8e8e8;
+  height: 58px;
 }
 
 .navbar-brand {
@@ -10311,21 +10311,6 @@ html.has-navbar-fixed-top {
   height: 30px;
 }
 
-@media (min-width: 1024px) {
-  body.has-navbar-fixed-top,
-  html.has-navbar-fixed-top {
-    padding-top: 86px;
-  }
-  .navbar {
-    padding: 12px 0;
-  }
-  .navbar-brand {
-    padding: 16px;
-  }
-  #navigation-logo {
-    height: 42px;
-  }
-}
 .is-flex {
   word-break: keep-all;
 }
@@ -10336,7 +10321,7 @@ html.has-navbar-fixed-top {
 }
 
 .home-hero {
-  background-color: #758e4f;
+  background-color: #386641;
 }
 
 .max-quarter {
@@ -10345,7 +10330,7 @@ html.has-navbar-fixed-top {
 }
 
 .benefits {
-  background-color: hsl(0, 0%, 96%);
+  background-color: #f4f4f4;
   padding-bottom: 10vh;
 }
 
@@ -10356,21 +10341,22 @@ html.has-navbar-fixed-top {
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08);
 }
 
+.call-to-action {
+  background-color: #fff;
+  color: #000;
+}
+
 .has-image-centered {
   margin-left: auto;
   margin-right: auto;
 }
 
 .has-background-green {
-  background-color: #758e4f;
+  background-color: #386641;
 }
 
 .has-background-default {
-  background-color: hsl(0, 0%, 96%);
-}
-
-.bold-button {
-  border-width: 4px;
+  background-color: #f4f4f4;
 }
 
 .footer .menu p {
@@ -10408,7 +10394,7 @@ html.has-navbar-fixed-top {
 }
 
 .left .colored {
-  color: hsl(0, 0%, 96%);
+  color: #f4f4f4;
   font-weight: 500;
   margin-top: 1rem !important;
 }
@@ -10431,7 +10417,7 @@ html.has-navbar-fixed-top {
 
 @media screen and (min-width: 769px) {
   .left {
-    border-right: 2px solid hsl(0, 0%, 96%);
+    border-right: 2px solid #f4f4f4;
     border-radius: 1px;
   }
 }
@@ -10504,4 +10490,8 @@ button.link:hover {
 .loader-wrapper .loader {
   height: 80px;
   width: 80px;
+}
+
+.feed {
+  padding: 20px;
 }

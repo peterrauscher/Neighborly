@@ -48,13 +48,12 @@ const Register = () => {
   }, []);
 
   return (
-    <section className="container has-background-green">
+    <section className="container">
       <div className="hero is-fullheight-with-navbar">
         <div className="hero-body container has-text-centered">
           <div className="register columns">
             <div className="column is-half is-hidden-mobile left">
               <h1 className="title is-1">Welcome to the block party</h1>
-              <h2 className="subtitle colored is-4">We're glad you're here.</h2>
               <p>
                 By joining Neighborly, you become part of a collaborative
                 community, promoting sustainability, reducing waste, and
