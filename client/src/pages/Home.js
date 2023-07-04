@@ -6,7 +6,7 @@ const Home = () => {
       <section className="hero is-fullheight-with-navbar home-hero">
         <div className="hero-body">
           <div className="container">
-            <div className="columns is-flex is-vcentered is-narrow">
+            <div className="columns is-vcentered is-narrow">
               <div className="column content is-two-fifths">
                 <p className="title is-1 has-text-white-ter">
                   Welcome To The Neighborhood
@@ -41,7 +41,10 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <section className="hero has-background-default pt-6">
+      <section
+        id="learn-more"
+        className="hero has-background-default pt-6 pb-3"
+      >
         <div className="container has-text-centered">
           <p className="title is-2">Why us?</p>
           <p className="subtitle is-5">
@@ -50,18 +53,11 @@ const Home = () => {
           </p>
         </div>
       </section>
-      <section id="learn-more" className="section benefits">
-        <div className="container">
-          <div className="columns is-centered">
-            <div className="column is-half has-text-centered">
-              <div className="box">
-                <figure className="image my-4">
-                  <img
-                    className="max-quarter has-image-centered"
-                    src="/images/foster-community.png"
-                    alt="People walking together"
-                  ></img>
-                </figure>
+      <section className="hero benefits">
+        <div className="hero-body">
+          <div className="container">
+            <div className="columns is-flex is-vcentered is-narrow">
+              <div className="column content blurb">
                 <p className="title is-3">Foster Community</p>
                 <p className="subtitle is-5">
                   Connect with neighbors, have meaningful interactions, and
@@ -69,16 +65,33 @@ const Home = () => {
                   trading.
                 </p>
               </div>
-            </div>
-            <div className="column is-half has-text-centered">
-              <div className="box">
-                <figure className="image my-4">
+              <div className="column">
+                <figure className="image">
                   <img
-                    className="max-quarter has-image-centered"
+                    className="has-image-centered"
+                    src="/images/foster-community.png"
+                    alt="People walking together"
+                  ></img>
+                </figure>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="hero benefits has-background-white">
+        <div className="hero-body">
+          <div className="container">
+            <div className="columns is-flex is-vcentered is-narrow">
+              <div className="column">
+                <figure className="image">
+                  <img
+                    className="has-image-centered"
                     src="/images/live-sustainably.png"
                     alt="Man and woman recycling"
                   ></img>
                 </figure>
+              </div>
+              <div className="column content blurb">
                 <p className="title is-3">Live Sustainably</p>
                 <p className="subtitle is-5">
                   Help save the planet by reducing your individual consumption
@@ -87,16 +100,13 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <div className="columns is-centered">
-            <div className="column is-half has-text-centered">
-              <div className="box">
-                <figure className="image my-4">
-                  <img
-                    className="max-quarter has-image-centered"
-                    src="/images/save-money.png"
-                    alt="Piggy bank"
-                  ></img>
-                </figure>
+        </div>
+      </section>
+      <section className="hero benefits">
+        <div className="hero-body">
+          <div className="container">
+            <div className="columns is-flex is-vcentered is-narrow">
+              <div className="column content blurb">
                 <p className="title is-3">Save Money</p>
                 <p className="subtitle is-5">
                   Keep more money in your pocket by skipping on big purchases
@@ -104,16 +114,33 @@ const Home = () => {
                   time you used your leafblower?
                 </p>
               </div>
-            </div>
-            <div className="column is-half has-text-centered">
-              <div className="box">
-                <figure className="image my-4">
+              <div className="column">
+                <figure className="image">
                   <img
-                    className="max-quarter has-image-centered"
+                    className="has-image-centered"
+                    src="/images/save-money.png"
+                    alt="Piggy bank"
+                  ></img>
+                </figure>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="hero benefits has-background-white pb-6">
+        <div className="hero-body">
+          <div className="container">
+            <div className="columns is-flex is-vcentered is-narrow">
+              <div className="column">
+                <figure className="image ">
+                  <img
+                    className="has-image-centered"
                     src="/images/find-space.png"
                     alt="Man and woman recycling"
                   ></img>
                 </figure>
+              </div>
+              <div className="column content blurb">
                 <p className="title is-3">Find Space</p>
                 <p className="subtitle is-5">
                   Make the most of your square footage. Beyond homegoods, you
@@ -125,41 +152,81 @@ const Home = () => {
         </div>
       </section>
       <section className="hero p-6 call-to-action">
-        <div className="container has-text-centered ">
+        <div className="container has-text-centered">
           <p className="title is-2 is-spaced">Ready to get started?</p>
           <p className="subtitle is-5">
             There's absolutely nothing to lose. So what are you waiting for?
           </p>
           <Link
             to="/register"
-            className="button is-dark is-outlined has-text-bold"
+            className="button is-dark is-rounded has-text-bold"
           >
             Sign up for free
           </Link>
         </div>
       </section>
-      <footer className="footer pb-6">
-        <div className="container has-text-centered">
-          <aside className="menu">
-            <p className="menu-label">About</p>
-            <ul className="menu-list">
-              <li>
-                <Link to="https://github.com/peterrauscher/Neighborly">
-                  Github
-                </Link>
-              </li>
-              <li>
-                <Link to="https://devpost.com/software/neighborly-42ghs1">
-                  Devpost
-                </Link>
-              </li>
-              <li>
-                <Link to="https://www.linkedin.com/in/peter-rauscher">
-                  Linkedin (I'm seeking a job)
-                </Link>
-              </li>
-            </ul>
-          </aside>
+      <footer className="footer">
+        <div className="container">
+          <div className="columns">
+            <div className="column is-one-third">
+              <p>© {new Date().getFullYear()} Neighborly.</p>
+              <br />
+              <p>
+                For site inquiries, contact{" "}
+                <a className="link" href="mailto:support@beneighborly.xyz">
+                  support@beneighborly.xyz
+                </a>
+              </p>
+            </div>
+            <div className="column is-one-quarter">
+              <p className="label">Site</p>
+              <Link className="link" to="/feed">
+                <p>All Posts</p>
+              </Link>
+              <Link className="link" to="/feed/borrow">
+                <p>Borrow</p>
+              </Link>
+              <Link className="link" to="/feed/lend">
+                <p>Lend</p>
+              </Link>
+              <Link className="link" to="/feed/trade">
+                <p>Trade</p>
+              </Link>
+            </div>
+            <div className="column is-one-quarter">
+              <p className="label">Social</p>
+              <Link className="link" to="https://peterrauscher.com">
+                <p>Blog</p>
+              </Link>
+              <Link
+                className="link"
+                to="https://github.com/peterrauscher/Neighborly"
+              >
+                <p>Github</p>
+              </Link>
+              <Link
+                className="link"
+                to="https://devpost.com/software/neighborly-42ghs1"
+              >
+                <p>Devpost</p>
+              </Link>
+              <Link
+                className="link"
+                to="https://www.linkedin.com/in/peter-rauscher"
+              >
+                <p>Linkedin</p>
+              </Link>
+            </div>
+            <div className="column is-one-quarter">
+              <p className="label">Help</p>
+              <Link className="link" to="/support">
+                <p>Support</p>
+              </Link>
+              <Link className="link" to="/media">
+                <p>Inquiries</p>
+              </Link>
+            </div>
+          </div>
         </div>
       </footer>
     </>

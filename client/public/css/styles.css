@@ -10351,16 +10351,22 @@ body {
   background-color: #f4f4f4;
 }
 
+.benefits img {
+  max-height: 512px;
+  max-width: 512px;
+  height: 40vh;
+  width: auto;
+}
+
+.blurb {
+  max-width: 40vw;
+}
+
 .section.benefits .box {
   height: 100%;
   border-radius: 3vh;
   padding: 5vh 5vw;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08);
-}
-
-.call-to-action {
-  background-color: #fff;
-  color: #000;
 }
 
 .has-image-centered {
@@ -10376,17 +10382,19 @@ body {
   background-color: #f4f4f4;
 }
 
-.footer .menu p {
-  font-weight: bold;
-  color: hsl(0, 0%, 4%);
+.footer {
+  background-color: hsl(0, 0%, 4%);
+  color: hsl(0, 0%, 71%);
+  padding: 40px 20px;
 }
 
-.footer .menu a {
-  color: hsl(0, 0%, 29%);
+.footer .column .label {
+  font-weight: 700;
+  color: hsl(0, 0%, 71%);
 }
 
-.footer .menu a:hover {
-  text-decoration: underline;
+.footer .column a {
+  color: inherit;
 }
 
 .login {
@@ -10470,6 +10478,11 @@ input:focus {
 
 .link:hover {
   text-decoration: underline;
+}
+
+a.nolink {
+  color: inherit;
+  text-decoration: inherit;
 }
 
 button.link {
