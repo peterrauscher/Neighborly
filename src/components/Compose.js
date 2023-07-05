@@ -1,17 +1,19 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { useContext, useState } from "react";
 import { useMutation } from "@apollo/client";
-import { INSERT_ONE_POST } from "../realm/graphql";
+import { useContext, useState } from "react";
 import { UserContext } from "../contexts/UserContext";
+import { INSERT_ONE_POST } from "../realm/graphql";
+import Loading from "./Loading";
 import Modal from "./Modal";
 
-const Compose = () => {
+const Compose = ({ refreshFeed }) => {
   const [postType, setPostType] = useState("lend");
   const [postBody, setPostBody] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState(null);
   const { user } = useContext(UserContext);
-  const [insertOnePost] = useMutation(INSERT_ONE_POST);
+  const [insertOnePost, { data, loading, error }] =
+    useMutation(INSERT_ONE_POST);
 
   const setActive = (e) => {
     e.preventDefault();
@@ -24,29 +26,31 @@ const Compose = () => {
     setPostType(e.currentTarget.getAttribute("data-target"));
   };
 
-  const handleNewPost = async (e) => {
+  const handleNewPost = (e) => {
     e.preventDefault();
-    try {
-      await insertOnePost({
-        variables: {
-          data: {
-            authorId: user.id,
-            content: postBody,
-            postType: postType,
-            postedAt: new Date(),
-          },
+    insertOnePost({
+      variables: {
+        data: {
+          authorId: user.id,
+          content: postBody,
+          postType: postType,
+          postedAt: new Date(),
         },
-      });
-      setPostBody("");
-      setModalContent(<p className="title is-1">Thanks for sharing!</p>);
-      setShowModal(true);
-    } catch (error) {
-      setModalContent(
-        <p className="title is-1">Uh oh! Something went wrong on our end.</p>
-      );
-      setShowModal(true);
-      console.error(error);
-    }
+      },
+      onCompleted: () => {
+        setPostBody("");
+        // setModalContent(<p className="title is-1">Thanks for sharing!</p>);
+        // setShowModal(true);
+        refreshFeed();
+      },
+      onError: () => {
+        // setShowModal(true);
+        // setModalContent(
+        //   <p className="title is-1">Uh oh! Something went wrong on our end.</p>
+        // );
+        console.error(error);
+      },
+    });
   };
 
   let placeholder;
@@ -62,6 +66,8 @@ const Compose = () => {
       break;
     default:
   }
+
+  if (loading) setModalContent(<Loading />);
 
   return (
     <div className="card publish">

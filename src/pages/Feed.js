@@ -1,13 +1,24 @@
-import { Link } from "react-router-dom";
-import { POSTS } from "../realm/graphql";
-import NeighborhoodSelect from "../components/NeighborhoodSelect";
-import Compose from "../components/Compose";
-import { useQuery } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client";
 import Loading from "components/Loading";
+import { useCallback, useEffect } from "react";
+import { Link } from "react-router-dom";
+import Compose from "../components/Compose";
+import NeighborhoodSelect from "../components/NeighborhoodSelect";
+import { POSTS } from "../realm/graphql";
 import DefaultErrorPage from "./DefaultErrorPage";
 
 const Feed = () => {
-  const { loading, error, data } = useQuery(POSTS);
+  const [getAllPosts, { loading, error, data }] = useLazyQuery(POSTS, {
+    fetchPolicy: "network-only",
+  });
+
+  const refreshFeed = useCallback(() => {
+    getAllPosts();
+  }, []);
+
+  useEffect(() => {
+    refreshFeed();
+  }, []);
 
   if (loading) return <Loading />;
   if (error) return <DefaultErrorPage />;
@@ -36,7 +47,7 @@ const Feed = () => {
           </div>
         </div>
         <div className="column scrollable">
-          <Compose />
+          <Compose refreshFeed={refreshFeed} />
           <div className="post-feed">
             {data?.posts &&
               data.posts.map((post) => (
