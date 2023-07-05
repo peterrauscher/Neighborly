@@ -10,32 +10,54 @@ const Navigation = () => {
   const { user, userLoading } = useContext(UserContext);
 
   let accountButtons;
-  if (isNavActive) {
-    accountButtons = (
-      <>
-        <Link to="/register" className="navbar-item">
-          Sign up
-        </Link>
-        <Link to="/login" className="navbar-item">
-          Log in
-        </Link>
-      </>
-    );
+  if (user) {
+    if (isNavActive) {
+      accountButtons = (
+        <>
+          <Link to="/logout" className="navbar-item">
+            Log Out
+          </Link>
+        </>
+      );
+    } else {
+      accountButtons = (
+        <>
+          <div className="navbar-item pr-2">
+            <Link to="/logout" className="button is-dark">
+              Log Out
+            </Link>
+          </div>
+        </>
+      );
+    }
   } else {
-    accountButtons = (
-      <>
-        <div className="navbar-item pr-2">
-          <Link to="/register" className="button is-dark">
+    if (isNavActive) {
+      accountButtons = (
+        <>
+          <Link to="/register" className="navbar-item">
             Sign up
           </Link>
-        </div>
-        <div className="navbar-item pl-2">
-          <Link to="/login" className="button is-dark is-outlined">
+          <Link to="/login" className="navbar-item">
             Log in
           </Link>
-        </div>
-      </>
-    );
+        </>
+      );
+    } else {
+      accountButtons = (
+        <>
+          <div className="navbar-item pr-2">
+            <Link to="/register" className="button is-dark">
+              Sign up
+            </Link>
+          </div>
+          <div className="navbar-item pl-2">
+            <Link to="/login" className="button is-dark is-outlined">
+              Log in
+            </Link>
+          </div>
+        </>
+      );
+    }
   }
 
   return (

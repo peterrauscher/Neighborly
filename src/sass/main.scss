@@ -35,6 +35,15 @@ body {
   padding: 4rem 0;
 }
 
+.scrollable {
+  overflow-y: auto;
+}
+
+.not-scrollable {
+  overflow-y: hidden;
+  height: 100vh;
+}
+
 // NAVIGATION
 
 .has-navbar-fixed-top {
@@ -264,6 +273,12 @@ button.link:hover {
 // FEED PAGE
 .feed {
   padding: 20px;
+  height: 100vh;
+}
+
+.feed > div.columns {
+  height: 100vh;
+  overflow-y: hidden;
 }
 
 .publish {
@@ -311,7 +326,7 @@ button.link:hover {
   flex-shrink: 0;
 }
 
-.post:not(:last-child) {
+.post {
   margin-bottom: 0.75rem;
 }
 

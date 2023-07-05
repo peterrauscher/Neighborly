@@ -16,8 +16,6 @@ const Feed = () => {
   if (loading) return <Loading />;
   if (error) return <DefaultErrorPage />;
 
-  const posts = data ? data.posts : null;
-
   return (
     <div className="feed">
       <div className="columns">
@@ -41,11 +39,11 @@ const Feed = () => {
             <p className="heading">FILTERS</p>
           </div>
         </div>
-        <div className="column">
+        <div className="column scrollable">
           <Compose />
           <div className="post-feed">
-            {posts &&
-              posts.map((post) => (
+            {data?.posts &&
+              data.posts.map((post) => (
                 <div className="card post" key={post.id}>
                   <article className="media">
                     {post.images && (

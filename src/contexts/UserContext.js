@@ -9,32 +9,25 @@ export const UserContext = createContext(null);
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
-  const [graphqlClient, setGraphqlClient] = useState(null);
 
-  const updatedApolloClient = () => {
-    return new ApolloClient({
-      link: new HttpLink({
-        uri: `https://us-central1.gcp.realm.mongodb.com/api/client/v2.0/app/${APP_ID}/graphql`,
-        fetch: async (uri, options) => {
-          await app.currentUser.refreshAccessToken();
-          options.headers.Authorization = `Bearer ${app.currentUser.accessToken}`;
-          return fetch(uri, options);
-        },
-      }),
-      cache: new InMemoryCache(),
-    });
+  const setUserName = async (name) => {
+    try {
+      if (!app.currentUser)
+        throw new Error("User is not logged in, cannot add metadata.");
+      const result = await app.currentUser.functions.setName(name);
+      if (!result.success) throw new Error(result.error);
+      return { success: true };
+    } catch (err) {
+      console.error(err);
+      return { succccess: false, error: err.message };
+    }
   };
 
   const emailPasswordLogin = async (email, password) => {
     try {
       setUserLoading(true);
-      const authedUser = await app.logIn(
-        Credentials.emailPassword(email, password)
-      );
-      console.assert(authedUser.id === app.currentUser.id);
+      await app.logIn(Credentials.emailPassword(email, password));
       setUser(app.currentUser);
-      const client = updatedApolloClient();
-      setGraphqlClient(client);
       setUserLoading(false);
       return { success: true };
     } catch (error) {
@@ -50,9 +43,12 @@ export const UserProvider = ({ children }) => {
     confirmPassword
   ) => {
     try {
+      if (password !== confirmPassword)
+        throw new Error("Password and confirmation did not match.");
       setUserLoading(true);
       await app.emailPasswordAuth.registerUser({ email, password });
       await emailPasswordLogin(email, password);
+      await setUserName(name);
       setUserLoading(false);
       return { success: true };
     } catch (error) {
@@ -61,15 +57,13 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const fetchUser = async () => {
+  const refreshUser = async () => {
     setUserLoading(true);
     if (!app.currentUser) return false;
     try {
       await app.currentUser.refreshCustomData();
       await app.currentUser.refreshAccessToken();
       setUser(app.currentUser);
-      const client = updatedApolloClient();
-      setGraphqlClient(client);
       setUserLoading(false);
       return app.currentUser;
     } catch (error) {
@@ -84,30 +78,38 @@ export const UserProvider = ({ children }) => {
       await app.currentUser.logOut();
       setUser(null);
       setUserLoading(false);
-      setGraphqlClient(null);
       return true;
     } catch (error) {
       throw error;
     }
   };
 
+  const getValidAccessToken = async () => {
+    if (!app.currentUser) {
+      await app.logIn(Credentials.anonymous());
+    } else {
+      await app.currentUser.refreshAccessToken();
+    }
+    return app.currentUser.accessToken;
+  };
+
   useEffect(() => {
-    fetchUser();
+    refreshUser();
   }, []);
 
   return (
     <UserContext.Provider
       value={{
+        app,
         user,
         setUser,
         userLoading,
         setUserLoading,
-        graphqlClient,
-        setGraphqlClient,
-        fetchUser,
+        refreshUser,
         emailPasswordLogin,
         emailPasswordSignup,
         logOutUser,
+        getValidAccessToken,
       }}
     >
       {children}
