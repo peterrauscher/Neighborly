@@ -36,6 +36,7 @@ const Compose = () => {
           },
         },
       });
+      setPostBody("");
       setModalContent(<p className="title is-1">Thanks for sharing!</p>);
       setShowModal(true);
     } catch (error) {
@@ -65,7 +66,12 @@ const Compose = () => {
     <div className="card publish">
       <div className="tabs is-boxed is-fullwidth">
         <ul>
-          <li onClick={setActive} data-target="lend" className="is-active">
+          <li
+            onClick={setActive}
+            data-target="lend"
+            key="lend"
+            className="is-active"
+          >
             <a>
               <span className="icon is-small">
                 <i className="fa fa-hand-holding-heart"></i>
@@ -73,7 +79,7 @@ const Compose = () => {
               <span> Lend</span>
             </a>
           </li>
-          <li onClick={setActive} data-target="borrow">
+          <li onClick={setActive} data-target="borrow" key="borrow">
             <a>
               <span className="icon is-small">
                 <i className="fa fa-hands-holding-circle"></i>
@@ -81,7 +87,7 @@ const Compose = () => {
               <span> Borrow</span>
             </a>
           </li>
-          <li onClick={setActive} data-target="trade">
+          <li onClick={setActive} data-target="trade" key="trade">
             <a>
               <span className="icon is-small">
                 <i className="fa fa-hand-holding-hand"></i>
@@ -97,6 +103,7 @@ const Compose = () => {
           <textarea
             className="textarea"
             onChange={(e) => setPostBody(e.currentTarget.value)}
+            value={postBody}
             placeholder={placeholder}
           ></textarea>
         </div>
@@ -115,7 +122,11 @@ const Compose = () => {
           <span>Publish</span>
         </button>
       </div>
-      <Modal open={showModal} content={modalContent}></Modal>
+      <Modal
+        open={showModal}
+        setOpen={setShowModal}
+        content={modalContent}
+      ></Modal>
     </div>
   );
 };

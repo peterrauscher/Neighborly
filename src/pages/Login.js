@@ -6,7 +6,7 @@ const Login = () => {
   const [formData, setFormData] = useState({});
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, fetchUser, emailPasswordLogin } = useContext(UserContext);
+  const { user, refreshUser, emailPasswordLogin } = useContext(UserContext);
   const emailRef = useRef();
   const passwordRef = useRef();
   const formRef = useRef();
@@ -37,7 +37,7 @@ const Login = () => {
   useEffect(() => {
     const loadUser = async () => {
       if (!user) {
-        const fetchedUser = await fetchUser();
+        const fetchedUser = await refreshUser();
         if (fetchedUser) handleRedirect();
       }
     };
