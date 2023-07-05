@@ -1,14 +1,10 @@
-import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { POST, POSTS } from "../realm/graphql";
+import { POSTS } from "../realm/graphql";
 import NeighborhoodSelect from "../components/NeighborhoodSelect";
 import Compose from "../components/Compose";
-import { UserContext } from "../contexts/UserContext";
-import axios from "axios";
-import { useMutation, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import Loading from "components/Loading";
 import DefaultErrorPage from "./DefaultErrorPage";
-import Modal from "components/Modal";
 
 const Feed = () => {
   const { loading, error, data } = useQuery(POSTS);

@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { useLocation } from "react-router";
 
-export const NavContext = createContext();
+export const NavContext = createContext(null);
 
 export const NavProvider = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
@@ -19,7 +19,10 @@ export const NavProvider = ({ children }) => {
       default:
         document.body.classList.remove("not-scrollable");
         document.documentElement.classList.remove("not-scrollable");
-        document.body.classList.add("has-navbar-fixed-top");
+        document.body.classList.add(
+          "has-navbar-fixed-top",
+          "has-background-green"
+        );
     }
   }, [location.pathname]);
 

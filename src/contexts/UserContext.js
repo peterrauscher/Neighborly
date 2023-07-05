@@ -1,7 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import { App, Credentials } from "realm-web";
-import { APP_ID, ATLAS_SERVICE } from "../realm/constants";
-import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client";
+import { APP_ID } from "../realm/constants";
 
 const app = new App(APP_ID);
 export const UserContext = createContext(null);

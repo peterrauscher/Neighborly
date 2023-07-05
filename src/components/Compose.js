@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import { useContext, useState } from "react";
 import { useMutation } from "@apollo/client";
 import { INSERT_ONE_POST } from "../realm/graphql";
@@ -98,7 +99,11 @@ const Compose = () => {
         </ul>
       </div>
       <div className="compose">
-        <img className="avatar" src="https://via.placeholder.com/96"></img>
+        <img
+          className="avatar"
+          alt="Your uploaded avatar"
+          src="https://via.placeholder.com/96"
+        ></img>
         <div className="control">
           <textarea
             className="textarea"
