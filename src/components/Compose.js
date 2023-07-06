@@ -126,7 +126,10 @@ const Compose = ({ refreshFeed }) => {
           </span>
           <span>Media</span>
         </button>
-        <button className="button is-rounded" onClick={handleNewPost}>
+        <button
+          className="button is-primary is-rounded"
+          onClick={handleNewPost}
+        >
           <span className="icon is-small">
             <i className="fa fa-plus"></i>
           </span>

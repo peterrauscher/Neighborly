@@ -6,6 +6,7 @@ import Compose from "../components/Compose";
 import NeighborhoodSelect from "../components/NeighborhoodSelect";
 import { POSTS } from "../realm/graphql";
 import DefaultErrorPage from "./DefaultErrorPage";
+import ReactTimeAgo from "react-time-ago";
 
 const Feed = () => {
   const [getAllPosts, { loading, error, data }] = useLazyQuery(POSTS, {
@@ -26,7 +27,7 @@ const Feed = () => {
   return (
     <div className="feed">
       <div className="columns">
-        <div className="column is-3">
+        <div className="column sidebar-root is-3">
           <div className="box sidebar">
             <NeighborhoodSelect />
             <Link to="/feed">
@@ -52,6 +53,19 @@ const Feed = () => {
             {data?.posts &&
               data.posts.map((post) => (
                 <div className="card post" key={post.id}>
+                  <div className="card-heading">
+                    <img
+                      className="avatar"
+                      src="https://via.placeholder.com/96"
+                      alt="User's avatar"
+                    />
+                    <div className="author-info">
+                      <a href="/user/username">Dan Walker</a>
+                      <span className="post-time">
+                        <ReactTimeAgo date={post.postedAt} locale="en-US" />
+                      </span>
+                    </div>
+                  </div>
                   <article className="media">
                     {post.images && (
                       <div className="media-left">

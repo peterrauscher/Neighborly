@@ -44,6 +44,34 @@ body {
   height: 100vh;
 }
 
+.has-image-centered {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.has-background-green {
+  background-color: $dark-green;
+}
+
+.has-background-default {
+  background-color: $background;
+}
+
+.footer {
+  background-color: $black;
+  color: $grey-light;
+  padding: 40px 20px;
+}
+
+.footer .column .label {
+  font-weight: 700;
+  color: $grey-light;
+}
+
+.footer .column a {
+  color: inherit;
+}
+
 // NAVIGATION
 
 .has-navbar-fixed-top {
@@ -85,11 +113,6 @@ body {
   background-color: $dark-green;
 }
 
-.max-quarter {
-  max-width: 33vh;
-  max-height: 33vh;
-}
-
 .benefits {
   background-color: $background;
 }
@@ -110,34 +133,6 @@ body {
   border-radius: 3vh;
   padding: 5vh 5vw;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12), 0px 0px 2px rgba(0, 0, 0, 0.08);
-}
-
-.has-image-centered {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.has-background-green {
-  background-color: $dark-green;
-}
-
-.has-background-default {
-  background-color: $background;
-}
-
-.footer {
-  background-color: $black;
-  color: $grey-light;
-  padding: 40px 20px;
-}
-
-.footer .column .label {
-  font-weight: 700;
-  color: $grey-light;
-}
-
-.footer .column a {
-  color: inherit;
 }
 
 // LOGIN & SIGNUP
@@ -272,8 +267,15 @@ button.link:hover {
 
 // FEED PAGE
 .feed {
-  padding: 20px;
   height: 100vh;
+}
+
+div.feed > div.columns > .column.scrollable {
+  padding: 20px 20px 20px 10px;
+}
+
+.sidebar-root {
+  padding: 20px 10px 20px 20px;
 }
 
 .feed > div.columns {
@@ -284,11 +286,14 @@ button.link:hover {
 .publish {
   border: 1px solid #dbdbdb;
   margin-bottom: 0.75rem;
-  border-radius: 0.5rem;
 }
 
 .card .tabs {
   margin-bottom: 8px;
+}
+
+.card .tabs ul li {
+  background-color: #fcfcfc;
 }
 
 .feed .compose {
@@ -316,6 +321,7 @@ button.link:hover {
 
 .publish .options {
   border-top: 1px solid #dbdbdb;
+  background-color: #fcfcfc;
   padding: 8px;
   display: flex;
   justify-content: space-between;
@@ -326,7 +332,7 @@ button.link:hover {
   flex-shrink: 0;
 }
 
-.post {
+.post:not(:last-child) {
   margin-bottom: 0.75rem;
 }
 

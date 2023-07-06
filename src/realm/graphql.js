@@ -58,6 +58,7 @@ export const POST = gql`
       content
       images
       postType
+      postedAt
     }
   }
 `;
@@ -73,6 +74,7 @@ export const POSTS = gql`
       content
       images
       postType
+      postedAt
     }
   }
 `;
