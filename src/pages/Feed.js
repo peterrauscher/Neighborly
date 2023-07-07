@@ -1,27 +1,48 @@
 import { useLazyQuery } from "@apollo/client";
 import Loading from "components/Loading";
-import { useCallback, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Compose from "../components/Compose";
-import NeighborhoodSelect from "../components/LocationSelect";
 import { POSTS } from "../realm/graphql";
 import DefaultErrorPage from "./DefaultErrorPage";
 import ReactTimeAgo from "react-time-ago";
+import LocationSelect from "../components/LocationSelect";
+import { UserContext } from "contexts/UserContext";
 
 const Feed = () => {
+  const { user, setUserNeighborhood } = useContext(UserContext);
+  const [neighborhood, setNeighborhood] = useState(
+    user.customData.neighborhood ? user.customData.neighborhood : null
+  );
   const [getAllPosts, { loading, error, data }] = useLazyQuery(POSTS, {
     fetchPolicy: "network-only",
   });
 
-  const refreshFeed = useCallback(() => {
-    getAllPosts();
-  }, []);
+  const handleNeighborhoodChange = (n) => {
+    setNeighborhood({
+      label: n.label,
+      placeId: n.value.place_id,
+    });
+    setUserNeighborhood({
+      label: n.label,
+      placeId: n.value.place_id,
+    });
+  };
 
   useEffect(() => {
-    refreshFeed();
-  }, []);
+    if (neighborhood) {
+      getAllPosts({
+        variables: {
+          filter: {
+            neighborhood: {
+              placeId: neighborhood.place_id,
+            },
+          },
+        },
+      });
+    } else getAllPosts();
+  }, [neighborhood]);
 
-  if (loading) return <Loading />;
   if (error) return <DefaultErrorPage />;
 
   return (
@@ -29,37 +50,64 @@ const Feed = () => {
       <div className="columns">
         <div className="column sidebar-root is-3">
           <div className="box sidebar">
-            <NeighborhoodSelect />
-            <Link to="/feed">
-              <p>All Posts</p>
-            </Link>
-            <Link to="/feed/lend">
-              <p>Lend</p>
-            </Link>
-            <Link to="/feed/borrow">
-              <p>Borrow</p>
-            </Link>
-            <Link to="/feed/trade">
-              <p>Trade</p>
-            </Link>
+            <div className="maps-selector">
+              <p className="heading">
+                <span className="icon is-small">
+                  <i className="fas fa-location-dot"></i>
+                </span>{" "}
+                Neighborhood
+              </p>
+              <LocationSelect
+                neighborhood={neighborhood}
+                setNeighborhood={handleNeighborhoodChange}
+              />
+            </div>
           </div>
           <div className="box sidebar">
-            <p className="heading">FILTERS</p>
+            <aside className="menu">
+              <p className="menu-label">I'm looking for...</p>
+              <ul className="menu-list">
+                <li>
+                  <Link className="is-active" to="/feed">
+                    <p>All Posts</p>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/feed/lend">
+                    <p>Lend</p>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/feed/borrow">
+                    <p>Borrow</p>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/feed/trade">
+                    <p>Trade</p>
+                  </Link>
+                </li>
+              </ul>
+              <p className="menu-label">FILTERS</p>
+            </aside>
           </div>
         </div>
         <div className="column scrollable">
-          <Compose refreshFeed={refreshFeed} />
+          <Compose />
           <div className="post-feed">
-            {data?.posts &&
+            {loading ? (
+              <Loading />
+            ) : (
+              data?.posts &&
               data.posts.map((post) => (
                 <div className="card post" key={post.id}>
                   <div className="card-heading">
-                    <img
-                      className="avatar"
-                      src="https://via.placeholder.com/96"
-                      alt="User's avatar"
-                    />
                     <div className="author-info">
+                      <img
+                        className="avatar"
+                        src="https://via.placeholder.com/96"
+                        alt="User's avatar"
+                      />
                       <a href="/user/username">Dan Walker</a>
                       <span className="post-time">
                         <ReactTimeAgo date={post.postedAt} locale="en-US" />
@@ -85,7 +133,8 @@ const Feed = () => {
                     </div>
                   </article>
                 </div>
-              ))}
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -4,13 +4,10 @@ import { useContext, useState } from "react";
 import { UserContext } from "../contexts/UserContext";
 import { INSERT_ONE_POST } from "../realm/graphql";
 import Loading from "./Loading";
-import Modal from "./Modal";
 
-const Compose = ({ refreshFeed }) => {
+const Compose = () => {
   const [postType, setPostType] = useState("lend");
   const [postBody, setPostBody] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState(null);
   const { user } = useContext(UserContext);
   const [insertOnePost, { data, loading, error }] =
     useMutation(INSERT_ONE_POST);
@@ -32,6 +29,7 @@ const Compose = ({ refreshFeed }) => {
       variables: {
         data: {
           authorId: user.id,
+          neighborhood: user.customData.neighborhood,
           content: postBody,
           postType: postType,
           postedAt: new Date(),
@@ -39,15 +37,8 @@ const Compose = ({ refreshFeed }) => {
       },
       onCompleted: () => {
         setPostBody("");
-        // setModalContent(<p className="title is-1">Thanks for sharing!</p>);
-        // setShowModal(true);
-        refreshFeed();
       },
       onError: () => {
-        // setShowModal(true);
-        // setModalContent(
-        //   <p className="title is-1">Uh oh! Something went wrong on our end.</p>
-        // );
         console.error(error);
       },
     });
@@ -66,8 +57,6 @@ const Compose = ({ refreshFeed }) => {
       break;
     default:
   }
-
-  if (loading) setModalContent(<Loading />);
 
   return (
     <div className="card publish">
@@ -136,11 +125,6 @@ const Compose = ({ refreshFeed }) => {
           <span>Publish</span>
         </button>
       </div>
-      <Modal
-        open={showModal}
-        setOpen={setShowModal}
-        content={modalContent}
-      ></Modal>
     </div>
   );
 };

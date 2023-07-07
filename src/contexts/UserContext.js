@@ -12,8 +12,25 @@ export const UserProvider = ({ children }) => {
   const setUserName = async (name) => {
     try {
       if (!app.currentUser)
-        throw new Error("User is not logged in, cannot add metadata.");
+        throw new Error("User is not logged in, cannot add username.");
       const result = await app.currentUser.functions.setName(name);
+      await app.currentUser.refreshCustomData();
+      if (!result.success) throw new Error(result.error);
+      return { success: true };
+    } catch (err) {
+      console.error(err);
+      return { succccess: false, error: err.message };
+    }
+  };
+
+  const setUserNeighborhood = async (neighborhood) => {
+    try {
+      if (!app.currentUser)
+        throw new Error("User is not logged in, cannot change neighborhood.");
+      const result = await app.currentUser.functions.setNeighborhood(
+        neighborhood
+      );
+      await app.currentUser.refreshCustomData();
       if (!result.success) throw new Error(result.error);
       return { success: true };
     } catch (err) {
@@ -26,6 +43,7 @@ export const UserProvider = ({ children }) => {
     try {
       setUserLoading(true);
       await app.logIn(Credentials.emailPassword(email, password));
+      app.currentUser.refreshCustomData();
       setUser(app.currentUser);
       setUserLoading(false);
       return { success: true };
@@ -104,6 +122,8 @@ export const UserProvider = ({ children }) => {
         setUser,
         userLoading,
         setUserLoading,
+        setUserName,
+        setUserNeighborhood,
         refreshUser,
         emailPasswordLogin,
         emailPasswordSignup,
