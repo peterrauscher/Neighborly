@@ -3,7 +3,7 @@ import Loading from "components/Loading";
 import { useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Compose from "../components/Compose";
-import NeighborhoodSelect from "../components/NeighborhoodSelect";
+import NeighborhoodSelect from "../components/LocationSelect";
 import { POSTS } from "../realm/graphql";
 import DefaultErrorPage from "./DefaultErrorPage";
 import ReactTimeAgo from "react-time-ago";
