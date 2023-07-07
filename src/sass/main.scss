@@ -271,16 +271,20 @@ button.link:hover {
 }
 
 div.feed > div.columns > .column.scrollable {
-  padding: 20px 20px 20px 10px;
+  padding: 30px 30px 30px 10px;
 }
 
 .sidebar-root {
-  padding: 20px 10px 20px 20px;
+  padding: 30px 10px 30px 30px;
 }
 
 .feed > div.columns {
   height: 100vh;
   overflow-y: hidden;
+}
+
+.maps-selector input {
+  box-shadow: none !important;
 }
 
 .publish {
@@ -319,6 +323,31 @@ div.feed > div.columns > .column.scrollable {
   height: initial;
 }
 
+.card.publish {
+  border-radius: 6px;
+}
+
+.publish .tabs {
+  border-radius: 6px 6px 0 0;
+}
+
+.publish .tabs ul {
+  border-radius: 6px 6px 0 0;
+}
+
+.publish .tabs ul li {
+  border-radius: 6px 6px 0 0;
+}
+
+.publish .tabs ul li a {
+  border-radius: 6px 6px 0 0;
+}
+
+
+.publish .options {
+  border-radius: 0 0 6px 6px;
+}
+
 .publish .options {
   border-top: 1px solid #dbdbdb;
   background-color: #fcfcfc;
@@ -338,6 +367,11 @@ div.feed > div.columns > .column.scrollable {
 
 .post {
   padding: 20px;
+  border-radius: 6px;
+}
+
+.post .card-heading {
+  
 }
 
 img.avatar {
