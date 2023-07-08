@@ -11,7 +11,9 @@ const Post = ({ post }) => {
             alt="User's avatar"
           />
           <div className="author-info">
-            <a href={`/user/${post.authorId}`}>John Doe</a>
+            <a href={post.authorId ? `/user/${post.authorId}` : "/not-found"}>
+              {post.authorName ? post.authorName : "[deleted]"}
+            </a>
             <p className="post-time">
               <ReactTimeAgo date={post.postedAt} locale="en-US" />
             </p>

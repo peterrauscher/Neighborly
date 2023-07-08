@@ -43,7 +43,8 @@ export const UserProvider = ({ children }) => {
     try {
       setUserLoading(true);
       await app.logIn(Credentials.emailPassword(email, password));
-      app.currentUser.refreshCustomData();
+      await app.currentUser.refreshCustomData();
+      app.currentUser.functions.logUserActive();
       setUser(app.currentUser);
       setUserLoading(false);
       return { success: true };
@@ -80,6 +81,7 @@ export const UserProvider = ({ children }) => {
     try {
       await app.currentUser.refreshCustomData();
       await app.currentUser.refreshAccessToken();
+      app.currentUser.functions.logUserActive();
       setUser(app.currentUser);
       setUserLoading(false);
       return app.currentUser;

@@ -98,11 +98,7 @@ const Compose = ({ setShouldReload = null }) => {
         <img
           className="avatar"
           alt="Your uploaded avatar"
-          src={
-            user.customData.avatar
-              ? user.customData.avatar
-              : "https://via.placeholder.com/96"
-          }
+          src={user.customData.avatar}
         ></img>
         <div className="control">
           <textarea
@@ -114,12 +110,22 @@ const Compose = ({ setShouldReload = null }) => {
         </div>
       </div>
       <div className="options">
-        <button className="button is-rounded">
-          <span className="icon is-small">
-            <i className="fa fa-camera"></i>
-          </span>
-          <span>Media</span>
-        </button>
+        <div className="file">
+          <label className="file-label">
+            <input
+              className="file-input"
+              type="file"
+              multiple={true}
+              accept="image/png, image/jpeg"
+            />
+            <span className="file-cta">
+              <span className="file-icon">
+                <i className="fas fa-camera"></i>
+              </span>
+              <span className="file-label">Add Photos</span>
+            </span>
+          </label>
+        </div>
         <button className="button is-rounded is-green" onClick={handleNewPost}>
           <span className="icon is-small">
             <i className="fa fa-plus"></i>

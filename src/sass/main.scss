@@ -332,6 +332,32 @@ button.is-green {
       .box {
         width: 100%;
       }
+
+      .neighbor-block {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-top: 0.75rem;
+        &:not(:last-child) {
+          margin-bottom: 0.75rem;
+        }
+        div {
+          margin-left: 12px;
+
+          a {
+            color: $grey-dark;
+            font-weight: 600;
+            display: block;
+          }
+          a:hover {
+            text-decoration: underline;
+          }
+          p {
+            color: $grey-light;
+            font-size: smaller;
+          }
+        }
+      }
     }
   }
 }

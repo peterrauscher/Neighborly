@@ -20,7 +20,6 @@ export const INSERT_ONE_POST = gql`
       postType
       postedAt
       neighborhood {
-        label
         placeId
       }
     }
@@ -30,16 +29,32 @@ export const INSERT_ONE_POST = gql`
 export const POSTS = gql`
   query GetPosts($placeId: String) {
     posts(query: { neighborhood: { placeId: $placeId } }) {
-      _id
-      authorId
+      author: user(accountId: authorId) {
+        accountId
+        avatar
+        name
+      }
       content
       images
       neighborhood {
-        label
         placeId
       }
       postType
       postedAt
+    }
+  }
+`;
+
+export const NEIGHBORS = gql`
+  query GetNeighbors($placeId: String!) {
+    users(query: { neighborhood: { placeId: $placeId } }) {
+      accountId
+      name
+      avatar
+      lastActive
+      neighborhood {
+        placeId
+      }
     }
   }
 `;

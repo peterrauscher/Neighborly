@@ -1,22 +1,29 @@
-import { useLazyQuery } from "@apollo/client";
+import { useLazyQuery, useQuery } from "@apollo/client";
 import Loading from "components/Loading";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Compose from "../components/Compose";
-import { POSTS } from "../realm/graphql";
+import { NEIGHBORS, POSTS } from "../realm/graphql";
 import DefaultErrorPage from "./DefaultErrorPage";
 import LocationSelect from "../components/LocationSelect";
 import { UserContext } from "contexts/UserContext";
 import Post from "components/Post";
+import ReactTimeAgo from "react-time-ago";
 
 const Feed = () => {
   const { user, setUserNeighborhood } = useContext(UserContext);
   const [neighborhood, setNeighborhood] = useState(
     user.customData.neighborhood ? user.customData.neighborhood : null
   );
-  const [shouldReload, setShouldReload] = useState(false);
+  const [shouldReload, setShouldReload] = useState(true);
   const [getAllPosts, { loading, error, data }] = useLazyQuery(POSTS, {
     fetchPolicy: "network-only",
+  });
+  const [
+    getAllNeighbors,
+    { loading: loadingNeighbors, error: errorNeighbors, data: dataNeighbors },
+  ] = useLazyQuery(NEIGHBORS, {
+    fetchPolicy: "cache-first",
   });
 
   const handleNeighborhoodChange = (n) => {
@@ -31,21 +38,27 @@ const Feed = () => {
   };
 
   const refreshFeed = useCallback(() => {
-    if (neighborhood) {
+    if (neighborhood && shouldReload) {
       getAllPosts({
         variables: {
           placeId: neighborhood.placeId,
         },
       });
-    } else getAllPosts();
+    }
     setShouldReload(false);
   }, [neighborhood, shouldReload]);
 
+  const refreshNeighbors = useCallback(() => {
+    if (neighborhood)
+      getAllNeighbors({ variables: { placeId: neighborhood.placeId } });
+  }, [neighborhood]);
+
   useEffect(() => {
+    refreshNeighbors();
     refreshFeed();
   }, [refreshFeed]);
 
-  if (error) return <DefaultErrorPage />;
+  if (error || errorNeighbors) return <DefaultErrorPage />;
 
   return (
     <div className="container">
@@ -111,7 +124,10 @@ const Feed = () => {
               {loading ? (
                 <Loading />
               ) : (
-                data?.posts && data.posts.map((post) => <Post post={post} />)
+                data?.posts &&
+                data.posts.map((post) => {
+                  return <Post post={post} />;
+                })
               )}
             </div>
           </div>
@@ -123,7 +139,37 @@ const Feed = () => {
                 </span>{" "}
                 Neighbors
               </p>
-              <p>TODO: A list of all people in the user's neighborhood!</p>
+              {loadingNeighbors ? (
+                <Loading />
+              ) : dataNeighbors?.users && dataNeighbors?.users?.length > 0 ? (
+                dataNeighbors?.users?.map((user) => {
+                  return (
+                    <div className="neighbor-block">
+                      <img
+                        className="avatar"
+                        src={user.avatar}
+                        alt={
+                          user.name
+                            ? `${user.name}'s avatar`
+                            : "Neighbor's avatar"
+                        }
+                      />
+                      <div>
+                        <a href={`/users/${user.accountId}`}>{user.name}</a>
+                        <p>
+                          Last active{" "}
+                          <ReactTimeAgo
+                            date={user.lastActive}
+                            locale="en-US"
+                          ></ReactTimeAgo>
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p>No neighbors yet!</p>
+              )}
             </div>
           </div>
         </div>
