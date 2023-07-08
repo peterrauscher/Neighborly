@@ -5,7 +5,7 @@ import { UserContext } from "../contexts/UserContext";
 import { INSERT_ONE_POST } from "../realm/graphql";
 import Loading from "./Loading";
 
-const Compose = () => {
+const Compose = ({ setShouldReload = null }) => {
   const [postType, setPostType] = useState("lend");
   const [postBody, setPostBody] = useState("");
   const { user } = useContext(UserContext);
@@ -37,6 +37,7 @@ const Compose = () => {
       },
       onCompleted: () => {
         setPostBody("");
+        if (setShouldReload) setShouldReload(true);
       },
       onError: () => {
         console.error(error);
@@ -97,7 +98,11 @@ const Compose = () => {
         <img
           className="avatar"
           alt="Your uploaded avatar"
-          src="https://via.placeholder.com/96"
+          src={
+            user.customData.avatar
+              ? user.customData.avatar
+              : "https://via.placeholder.com/96"
+          }
         ></img>
         <div className="control">
           <textarea
@@ -115,10 +120,7 @@ const Compose = () => {
           </span>
           <span>Media</span>
         </button>
-        <button
-          className="button is-primary is-rounded"
-          onClick={handleNewPost}
-        >
+        <button className="button is-rounded is-green" onClick={handleNewPost}>
           <span className="icon is-small">
             <i className="fa fa-plus"></i>
           </span>

@@ -17,7 +17,10 @@ export const NavProvider = ({ children }) => {
         document.documentElement.classList.add("not-scrollable");
         break;
       default:
-        document.body.classList.remove("not-scrollable");
+        document.body.classList.remove(
+          "not-scrollable",
+          "has-background-default"
+        );
         document.documentElement.classList.remove("not-scrollable");
         document.body.classList.add("has-navbar-fixed-top");
     }

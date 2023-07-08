@@ -27,36 +27,17 @@ export const INSERT_ONE_POST = gql`
   }
 `;
 
-export const POST = gql`
-  query Post($query: PostQueryInput) {
-    post(query: $query) {
-      authorId
-      neighborhood {
-        label
-        placeId
-      }
-      content
-      images
-      postType
-      postedAt
-    }
-  }
-`;
-
 export const POSTS = gql`
-  query Posts(
-    $query: PostQueryInput
-    $limit: Int = 100
-    $sortBy: PostSortByInput
-  ) {
-    posts(query: $query, limit: $limit, sortBy: $sortBy) {
+  query GetPosts($placeId: String) {
+    posts(query: { neighborhood: { placeId: $placeId } }) {
+      _id
       authorId
+      content
+      images
       neighborhood {
         label
         placeId
       }
-      content
-      images
       postType
       postedAt
     }
