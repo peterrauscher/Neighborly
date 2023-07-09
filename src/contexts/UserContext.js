@@ -1,13 +1,14 @@
 import { createContext, useEffect, useState } from "react";
 import { App, Credentials } from "realm-web";
 import { APP_ID } from "../realm/constants";
+import Loading from "../components/Loading";
 
 const app = new App(APP_ID);
 export const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [userLoading, setUserLoading] = useState(true);
+  const [userLoading, setUserLoading] = useState(false);
 
   const setUserName = async (name) => {
     try {
@@ -76,15 +77,15 @@ export const UserProvider = ({ children }) => {
   };
 
   const refreshUser = async () => {
-    setUserLoading(true);
     if (!app.currentUser) return false;
     try {
+      setUserLoading(true);
       await app.currentUser.refreshCustomData();
       await app.currentUser.refreshAccessToken();
       app.currentUser.functions.logUserActive();
       setUser(app.currentUser);
       setUserLoading(false);
-      return app.currentUser;
+      return true;
     } catch (error) {
       setUserLoading(false);
       throw error;
@@ -115,6 +116,8 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     refreshUser();
   }, []);
+
+  if (userLoading) return <Loading />;
 
   return (
     <UserContext.Provider

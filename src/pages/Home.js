@@ -33,7 +33,7 @@ const Home = () => {
                   <img
                     className="hero-img has-image-centered"
                     alt="Colorful row of houses"
-                    src="/images/neighborhood.png"
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/neighborhood.png"
                   ></img>
                 </figure>
               </div>
@@ -69,7 +69,7 @@ const Home = () => {
                 <figure className="image">
                   <img
                     className="has-image-centered"
-                    src="/images/foster-community.png"
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/foster-community.png"
                     alt="People walking together"
                   ></img>
                 </figure>
@@ -86,7 +86,7 @@ const Home = () => {
                 <figure className="image">
                   <img
                     className="has-image-centered"
-                    src="/images/live-sustainably.png"
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/live-sustainably.png"
                     alt="Man and woman recycling"
                   ></img>
                 </figure>
@@ -118,7 +118,7 @@ const Home = () => {
                 <figure className="image">
                   <img
                     className="has-image-centered"
-                    src="/images/save-money.png"
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/save-money.png"
                     alt="Piggy bank"
                   ></img>
                 </figure>
@@ -135,7 +135,7 @@ const Home = () => {
                 <figure className="image ">
                   <img
                     className="has-image-centered"
-                    src="/images/find-space.png"
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/find-space.png"
                     alt="Man and woman recycling"
                   ></img>
                 </figure>
@@ -219,11 +219,11 @@ const Home = () => {
             </div>
             <div className="column is-one-quarter">
               <p className="label">Help</p>
-              <Link className="link" to="/support">
+              <Link className="link" to="/help">
                 <p>Support</p>
               </Link>
-              <Link className="link" to="/media">
-                <p>Inquiries</p>
+              <Link className="link" to="/contact">
+                <p>Contact Us</p>
               </Link>
             </div>
           </div>

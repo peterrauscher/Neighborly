@@ -24,9 +24,18 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/logout" element={<Logout />} />
                 <Route path="*" element={<DefaultErrorPage />} />
-              </Route>
-              <Route element={<ProtectedRoute />}>
-                <Route path="/feed" element={<Feed />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/feed" element={<Feed posts="all" />} />
+                  <Route path="/feed/lend" element={<Feed posts="lend" />} />
+                  <Route
+                    path="/feed/borrow"
+                    element={<Feed posts="borrow" />}
+                  />
+                  <Route path="/feed/trade" element={<Feed posts="trade" />} />
+                  {/* <Route path="/user/*" element={<User />} /> */}
+                  {/* <Route path="/help" element={<Help />} /> */}
+                  {/* <Route path="/contact" element={<Contact />} /> */}
+                </Route>
               </Route>
             </Routes>
           </NavProvider>

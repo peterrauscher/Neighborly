@@ -27,20 +27,21 @@ export const INSERT_ONE_POST = gql`
 `;
 
 export const POSTS = gql`
-  query GetPosts($placeId: String) {
-    posts(query: { neighborhood: { placeId: $placeId } }) {
-      author: user(accountId: authorId) {
-        accountId
-        avatar
-        name
-      }
+  query GetPostsWithAuthors($placeId: String!, $postType: String) {
+    postsWithAuthors(input: { placeId: $placeId, postType: $postType }) {
       content
       images
       neighborhood {
         placeId
+        label
       }
       postType
       postedAt
+      author {
+        accountId
+        avatar
+        name
+      }
     }
   }
 `;

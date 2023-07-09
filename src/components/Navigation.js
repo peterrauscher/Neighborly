@@ -2,12 +2,10 @@ import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { NavContext } from "../contexts/NavContext";
 import { UserContext } from "../contexts/UserContext";
-import logo from "../images/logo-text.png";
 
 const Navigation = () => {
-  const { isMobile, setIsMobile, isNavActive, setIsNavActive } =
-    useContext(NavContext);
-  const { user, userLoading } = useContext(UserContext);
+  const { isNavActive, setIsNavActive } = useContext(NavContext);
+  const { user } = useContext(UserContext);
 
   let accountButtons;
   if (user) {
@@ -70,9 +68,9 @@ const Navigation = () => {
         <Link to="/">
           <img
             id="navigation-logo"
-            alt="Neighborly Logo"
-            aria-label="Neighborly Logo"
-            src={logo}
+            alt="Logo"
+            aria-label="Logo"
+            src="https://storage.cloud.google.com/beneighborly.xyz/assets/logo-text.png"
           />
         </Link>
         <button
@@ -97,9 +95,11 @@ const Navigation = () => {
           <Link to="/" className="navbar-item">
             Home
           </Link>
-          <Link to="/feed" className="navbar-item">
-            Feed
-          </Link>
+          {user && (
+            <Link to="/feed" className="navbar-item">
+              Feed
+            </Link>
+          )}
           {accountButtons}
         </div>
       </div>

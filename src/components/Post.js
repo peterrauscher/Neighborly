@@ -2,18 +2,16 @@ import ReactTimeAgo from "react-time-ago";
 
 const Post = ({ post }) => {
   return (
-    <div className="card post" key={post._id}>
+    <div className="card post">
       <div className="card-heading">
         <div className="post-author">
           <img
             className="avatar"
-            src="https://via.placeholder.com/96"
-            alt="User's avatar"
+            src={post.author.avatar}
+            alt={`${post.author.name}'s avatar`}
           />
           <div className="author-info">
-            <a href={post.authorId ? `/user/${post.authorId}` : "/not-found"}>
-              {post.authorName ? post.authorName : "[deleted]"}
-            </a>
+            <a href={`/user/${post.author.accountId}`}>{post.author.name}</a>
             <p className="post-time">
               <ReactTimeAgo date={post.postedAt} locale="en-US" />
             </p>
@@ -26,7 +24,7 @@ const Post = ({ post }) => {
       <div className="card-image">
         {post.images && (
           <figure className="image is-64x64">
-            <img src={post.images[0]} alt="Post" />
+            <img alt={`Uploaded by ${post.author.name}`} src={post.images[0]} />
           </figure>
         )}
       </div>

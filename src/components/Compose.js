@@ -23,12 +23,66 @@ const Compose = ({ setShouldReload = null }) => {
     setPostType(e.currentTarget.getAttribute("data-target"));
   };
 
-  const handleNewPost = (e) => {
+  const generateUniqueFileName = (file) => {
+    const timestamp = new Date().getTime();
+    const randomString = Math.random().toString(36).substring(2, 7);
+    const fileName = `${timestamp}_${randomString}_${file.name}`;
+    return fileName;
+  };
+
+  const uploadToStorage = (file, fileName) => {
+    return new Promise((resolve, reject) => {
+      const storage = firebase.storage();
+      const storageRef = storage.ref();
+      const fileRef = storageRef.child(fileName);
+
+      const uploadTask = fileRef.put(file);
+
+      uploadTask.on(
+        "state_changed",
+        null,
+        (error) => {
+          reject(error);
+        },
+        () => {
+          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+            resolve(downloadURL);
+          });
+        }
+      );
+    });
+  };
+
+  const handleNewPost = async (e) => {
     e.preventDefault();
+
+    // Perform image upload to Google Cloud Storage
+    const fileInput = document.getElementById("file-input");
+    const files = fileInput.files;
+    const images = [];
+
+    if (files.length > 5) {
+      // Display an error message or show an error modal
+      console.error("Exceeded maximum number of images");
+      return;
+    }
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size > 2 * 1024 * 1024) {
+        // Display an error message or show an error modal
+        console.error("File size exceeds maximum limit");
+        return;
+      }
+      const fileName = generateUniqueFileName(file);
+      const imageUrl = await uploadToStorage(file, fileName);
+      images.push(imageUrl);
+    }
+
     insertOnePost({
       variables: {
         data: {
-          authorId: user.id,
+          authorId: user.id.toString(),
           neighborhood: user.customData.neighborhood,
           content: postBody,
           postType: postType,
@@ -37,6 +91,7 @@ const Compose = ({ setShouldReload = null }) => {
       },
       onCompleted: () => {
         setPostBody("");
+        fileInput.value = ""; // Clear file input
         if (setShouldReload) setShouldReload(true);
       },
       onError: () => {
@@ -97,7 +152,7 @@ const Compose = ({ setShouldReload = null }) => {
       <div className="compose">
         <img
           className="avatar"
-          alt="Your uploaded avatar"
+          alt="Your avatar"
           src={user.customData.avatar}
         ></img>
         <div className="control">

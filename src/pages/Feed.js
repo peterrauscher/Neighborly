@@ -1,6 +1,6 @@
-import { useLazyQuery, useQuery } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client";
 import Loading from "components/Loading";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Compose from "../components/Compose";
 import { NEIGHBORS, POSTS } from "../realm/graphql";
@@ -10,13 +10,16 @@ import { UserContext } from "contexts/UserContext";
 import Post from "components/Post";
 import ReactTimeAgo from "react-time-ago";
 
-const Feed = () => {
+const Feed = ({ posts = "all" }) => {
   const { user, setUserNeighborhood } = useContext(UserContext);
   const [neighborhood, setNeighborhood] = useState(
     user.customData.neighborhood ? user.customData.neighborhood : null
   );
   const [shouldReload, setShouldReload] = useState(true);
-  const [getAllPosts, { loading, error, data }] = useLazyQuery(POSTS, {
+  const [
+    getAllPosts,
+    { loading: loadingPosts, error: errorPosts, data: dataPosts },
+  ] = useLazyQuery(POSTS, {
     fetchPolicy: "network-only",
   });
   const [
@@ -25,6 +28,20 @@ const Feed = () => {
   ] = useLazyQuery(NEIGHBORS, {
     fetchPolicy: "cache-first",
   });
+
+  const postLink = (type, href, text) => {
+    return { isActive: type === posts, type: type, href: href, text: text };
+  };
+
+  const postLinks = [
+    postLink("all", "/feed", "All Posts"),
+    postLink("lend", "/feed/lend", "Lend"),
+    postLink("borrow", "/feed/borrow", "Borrow"),
+    postLink("trade", "/feed/trade", "Trade"),
+  ];
+
+  // const postFilter = (type, text) => {};
+  // const postFilters = [postFilter()];
 
   const handleNeighborhoodChange = (n) => {
     setNeighborhood({
@@ -37,28 +54,24 @@ const Feed = () => {
     });
   };
 
-  const refreshFeed = useCallback(() => {
-    if (neighborhood && shouldReload) {
+  useEffect(() => {
+    if (neighborhood) {
       getAllPosts({
         variables: {
           placeId: neighborhood.placeId,
+          postType: posts,
         },
       });
+      setShouldReload(false);
     }
-    setShouldReload(false);
-  }, [neighborhood, shouldReload]);
-
-  const refreshNeighbors = useCallback(() => {
-    if (neighborhood)
-      getAllNeighbors({ variables: { placeId: neighborhood.placeId } });
-  }, [neighborhood]);
+  }, [neighborhood, shouldReload, getAllPosts, posts]);
 
   useEffect(() => {
-    refreshNeighbors();
-    refreshFeed();
-  }, [refreshFeed]);
+    if (neighborhood)
+      getAllNeighbors({ variables: { placeId: neighborhood.placeId } });
+  }, [neighborhood, getAllNeighbors]);
 
-  if (error || errorNeighbors) return <DefaultErrorPage />;
+  if (errorPosts || errorNeighbors) return <DefaultErrorPage />;
 
   return (
     <div className="container">
@@ -67,11 +80,11 @@ const Feed = () => {
           <div className="column is-3 sidebar-left">
             <div className="box sidebar">
               <div className="maps-selector">
-                <p className="heading">
+                <p className="menu-label">
                   <span className="icon is-small">
                     <i className="fas fa-location-dot"></i>
-                  </span>{" "}
-                  Neighborhood
+                  </span>
+                  <span> Neighborhood</span>
                 </p>
                 <LocationSelect
                   neighborhood={neighborhood}
@@ -84,36 +97,29 @@ const Feed = () => {
                 <p className="menu-label">
                   <span className="icon is-small">
                     <i className="fas fa-rss"></i>
-                  </span>{" "}
-                  Posts
+                  </span>
+                  <span> Posts</span>
                 </p>
                 <ul className="menu-list">
-                  <li>
-                    <Link className="is-active" to="/feed">
-                      <p>All Posts</p>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/feed/lend">
-                      <p>Lend</p>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/feed/borrow">
-                      <p>Borrow</p>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/feed/trade">
-                      <p>Trade</p>
-                    </Link>
-                  </li>
+                  {postLinks &&
+                    postLinks.map((link) => {
+                      return (
+                        <li key={link.type}>
+                          <Link
+                            className={link.isActive ? "is-active" : ""}
+                            to={link.href}
+                          >
+                            <p>{link.text}</p>
+                          </Link>
+                        </li>
+                      );
+                    })}
                 </ul>
                 <p className="menu-label">
                   <span className="icon is-small">
                     <i className="fas fa-filter"></i>
-                  </span>{" "}
-                  Filters
+                  </span>
+                  <span> Filters</span>
                 </p>
               </aside>
             </div>
@@ -121,11 +127,11 @@ const Feed = () => {
           <div className="column is-6 scrollable">
             <Compose setShouldReload={setShouldReload} />
             <div className="post-feed">
-              {loading ? (
+              {loadingPosts ? (
                 <Loading />
               ) : (
-                data?.posts &&
-                data.posts.map((post) => {
+                dataPosts?.postsWithAuthors &&
+                dataPosts?.postsWithAuthors.map((post) => {
                   return <Post post={post} />;
                 })
               )}
@@ -133,15 +139,16 @@ const Feed = () => {
           </div>
           <div className="column is-3 sidebar-right">
             <div className="box sidebar">
-              <p className="heading">
+              <p className="menu-label">
                 <span className="icon is-small">
                   <i className="fas fa-user-group"></i>
-                </span>{" "}
-                Neighbors
+                </span>
+                <span> Neighbors</span>
               </p>
               {loadingNeighbors ? (
                 <Loading />
-              ) : dataNeighbors?.users && dataNeighbors?.users?.length > 0 ? (
+              ) : (
+                dataNeighbors?.users &&
                 dataNeighbors?.users?.map((user) => {
                   return (
                     <div className="neighbor-block">
@@ -167,8 +174,6 @@ const Feed = () => {
                     </div>
                   );
                 })
-              ) : (
-                <p>No neighbors yet!</p>
               )}
             </div>
           </div>
