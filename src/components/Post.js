@@ -1,6 +1,10 @@
 import ReactTimeAgo from "react-time-ago";
+import { UserContext } from "contexts/UserContext";
+import { useContext } from "react";
 
 const Post = ({ post }) => {
+  const { firebaseStorage } = useContext(UserContext);
+
   return (
     <div className="card post">
       <div className="card-heading">

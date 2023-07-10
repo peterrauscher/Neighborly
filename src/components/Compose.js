@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { useMutation } from "@apollo/client";
-import { ref, uploadBytes } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import Resizer from "react-image-file-resizer";
 import { useContext, useState } from "react";
 import { UserContext } from "../contexts/UserContext";
 import { INSERT_ONE_POST } from "../realm/graphql";
@@ -25,61 +26,45 @@ const Compose = ({ setShouldReload = null }) => {
   };
 
   const generateUniqueFileName = () =>
-    `${new Date().getTime()}_${Math.random().toString(36).substring(2, 7)}`;
-
-  const uploadToStorage = async (file, fileName) => {
-    const fileRef = ref(firebaseStorage, `images/${fileName}`);
-    uploadBytes(fileRef, file)
-      .catch((error) => {
-        console.error(error);
-        return { error: error };
-      })
-      .then((snapshot) => {
-        console.log(`Uploaded image: ${fileName}\n`, snapshot);
-      });
-  };
+    `${Math.random().toString(36).substring(2, 7)}_${new Date().getTime()}.jpg`;
 
   const handleNewPost = async (e) => {
     e.preventDefault();
-    // @ts-ignore
-    const fileInput = document.getElementById("file-input").files;
-    const images = [];
     if (files.length > 5) {
-      // TODO: Display an error message or show an error modal
       console.error("Exceeded maximum number of images");
-      return;
-    }
+      // TODO: display error modal
+    } else {
+      const images = await Promise.all(
+        files.map(async (file) => {
+          const fileName = generateUniqueFileName();
+          const fileRef = ref(firebaseStorage, `images/${fileName}`);
+          await uploadBytes(fileRef, file);
+          return getDownloadURL(fileRef);
+        })
+      );
 
-    files.forEach((file) => {
-      if (file.size > 2 * 1024 * 1024) {
-        // TODO: Display an error message or show an error modal
-        console.error("File size exceeds maximum limit");
-        return;
-      }
-      const fileName = generateUniqueFileName();
-      uploadToStorage(file, fileName);
-      images.push(fileName);
-    });
-
-    insertOnePost({
-      variables: {
-        data: {
-          authorId: user.id.toString(),
-          neighborhood: user.customData.neighborhood,
-          content: postBody,
-          postType: postType,
-          postedAt: new Date(),
+      insertOnePost({
+        variables: {
+          data: {
+            authorId: user.id.toString(),
+            neighborhood: user.customData.neighborhood,
+            images: images,
+            content: postBody,
+            postType: postType,
+            postedAt: new Date(),
+          },
         },
-      },
-      onCompleted: () => {
-        setPostBody("");
-        fileInput.value = "";
-        if (setShouldReload) setShouldReload(true);
-      },
-      onError: () => {
-        console.error(error);
-      },
-    });
+        onCompleted: () => {
+          setPostBody("");
+          // @ts-ignore
+          document.getElementById("file-input").files.value = "";
+          if (setShouldReload) setShouldReload(true);
+        },
+        onError: () => {
+          console.error(error);
+        },
+      });
+    }
   };
 
   let placeholder;
@@ -155,7 +140,33 @@ const Compose = ({ setShouldReload = null }) => {
               multiple={true}
               id="file-input"
               accept="image/png, image/jpeg"
-              onChange={(e) => setFiles(Array.from(e.currentTarget.files))}
+              onChange={async (e) => {
+                try {
+                  Promise.all(
+                    Array.from(e.currentTarget.files).map(
+                      (file) =>
+                        new Promise((resolve) => {
+                          Resizer.imageFileResizer(
+                            file,
+                            1024,
+                            1024,
+                            "JPEG",
+                            70,
+                            0,
+                            (uri) => {
+                              resolve(uri);
+                            },
+                            "file",
+                            300,
+                            300
+                          );
+                        })
+                    )
+                  ).then((resizedFiles) => setFiles(resizedFiles));
+                } catch (err) {
+                  console.log(err);
+                }
+              }}
             />
             <span className="file-cta">
               <span className="file-icon">
