@@ -1,14 +1,15 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import { useMutation } from "@apollo/client";
+import { ref, uploadBytes } from "firebase/storage";
 import { useContext, useState } from "react";
 import { UserContext } from "../contexts/UserContext";
 import { INSERT_ONE_POST } from "../realm/graphql";
-import Loading from "./Loading";
 
 const Compose = ({ setShouldReload = null }) => {
   const [postType, setPostType] = useState("lend");
   const [postBody, setPostBody] = useState("");
-  const { user } = useContext(UserContext);
+  const [files, setFiles] = useState([]);
+  const { user, firebaseStorage } = useContext(UserContext);
   const [insertOnePost, { data, loading, error }] =
     useMutation(INSERT_ONE_POST);
 
@@ -23,61 +24,42 @@ const Compose = ({ setShouldReload = null }) => {
     setPostType(e.currentTarget.getAttribute("data-target"));
   };
 
-  const generateUniqueFileName = (file) => {
-    const timestamp = new Date().getTime();
-    const randomString = Math.random().toString(36).substring(2, 7);
-    const fileName = `${timestamp}_${randomString}_${file.name}`;
-    return fileName;
-  };
+  const generateUniqueFileName = () =>
+    `${new Date().getTime()}_${Math.random().toString(36).substring(2, 7)}`;
 
-  const uploadToStorage = (file, fileName) => {
-    return new Promise((resolve, reject) => {
-      const storage = firebase.storage();
-      const storageRef = storage.ref();
-      const fileRef = storageRef.child(fileName);
-
-      const uploadTask = fileRef.put(file);
-
-      uploadTask.on(
-        "state_changed",
-        null,
-        (error) => {
-          reject(error);
-        },
-        () => {
-          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-            resolve(downloadURL);
-          });
-        }
-      );
-    });
+  const uploadToStorage = async (file, fileName) => {
+    const fileRef = ref(firebaseStorage, `images/${fileName}`);
+    uploadBytes(fileRef, file)
+      .catch((error) => {
+        console.error(error);
+        return { error: error };
+      })
+      .then((snapshot) => {
+        console.log(`Uploaded image: ${fileName}\n`, snapshot);
+      });
   };
 
   const handleNewPost = async (e) => {
     e.preventDefault();
-
-    // Perform image upload to Google Cloud Storage
-    const fileInput = document.getElementById("file-input");
-    const files = fileInput.files;
+    // @ts-ignore
+    const fileInput = document.getElementById("file-input").files;
     const images = [];
-
     if (files.length > 5) {
-      // Display an error message or show an error modal
+      // TODO: Display an error message or show an error modal
       console.error("Exceeded maximum number of images");
       return;
     }
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    files.forEach((file) => {
       if (file.size > 2 * 1024 * 1024) {
-        // Display an error message or show an error modal
+        // TODO: Display an error message or show an error modal
         console.error("File size exceeds maximum limit");
         return;
       }
-      const fileName = generateUniqueFileName(file);
-      const imageUrl = await uploadToStorage(file, fileName);
-      images.push(imageUrl);
-    }
+      const fileName = generateUniqueFileName();
+      uploadToStorage(file, fileName);
+      images.push(fileName);
+    });
 
     insertOnePost({
       variables: {
@@ -91,7 +73,7 @@ const Compose = ({ setShouldReload = null }) => {
       },
       onCompleted: () => {
         setPostBody("");
-        fileInput.value = ""; // Clear file input
+        fileInput.value = "";
         if (setShouldReload) setShouldReload(true);
       },
       onError: () => {
@@ -171,7 +153,9 @@ const Compose = ({ setShouldReload = null }) => {
               className="file-input"
               type="file"
               multiple={true}
+              id="file-input"
               accept="image/png, image/jpeg"
+              onChange={(e) => setFiles(Array.from(e.currentTarget.files))}
             />
             <span className="file-cta">
               <span className="file-icon">
