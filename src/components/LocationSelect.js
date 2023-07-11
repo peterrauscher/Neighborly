@@ -6,7 +6,7 @@ const LocationSelect = ({ neighborhood, setNeighborhood }) => {
 
   return (
     <GooglePlacesAutocomplete
-      apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
+      apiKey="AIzaSyDIWTjVRuyMlTGpP47w8CbO91dOoGgRFPE"
       apiOptions={{ language: "en", region: "us" }}
       selectProps={{
         placeholder: neighborhood ? neighborhood.label : "I live in...",
