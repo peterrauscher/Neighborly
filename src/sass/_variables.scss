@@ -5,11 +5,13 @@ $grey-lighter: #dbdbdb;
 $orange: #bc6c25;
 $yellow: #ffce67;
 $green: #386641;
+$light-green: #6a994e;
 $cyan: #86bbd8;
 $blue: #33658a;
 $red: #e07f7d;
 $turquoise: #6abfb0;
 
+$success: $light-green;
 $danger: $red;
 
 $text: darken($grey, 10);

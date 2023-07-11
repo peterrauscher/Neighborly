@@ -1,70 +1,60 @@
-# Getting Started with Create React App
+# Neighborly
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Neighborly Logo](/assets/logo-with-text.png)
 
-## Available Scripts
+Neighborly is a community-driven platform that connects people within the same city or neighborhood, allowing them to responsibly borrow, lend, or trade various items like tools, vehicles, or extra storage space. It aims to foster a sense of community, promote sustainability, and reduce waste and consumption by facilitating resource sharing among neighbors.
 
-In the project directory, you can run:
+## We're Live!
 
-### `npm start`
+Check out the live version of Neighborly at [beneighborly.xyz](https://beneighborly.xyz).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Technologies Used
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- [MongoDB Atlas](https://www.mongodb.com/atlas) - MongoDB's serverless database and application service. I used the built in user authentication methods, a databse cluster with custom GraphQL resolvers, and the serverless Functions feature.
+- [Google Cloud Storage](https://cloud.google.com/storage) - Cloud storage buckets are used for hosting images that users upload along with their posts.
+- [Google Cloud Functions](https://cloud.google.com/functions) - A serverless compute platform for running event-driven functions in the cloud.
+- [Google Cloud Build & Google Cloud Run](https://cloud.google.com/run) - Used to deploy the Dockerized version of this app to the cloud, without the need to manage infrastructure. The custom domains feature was used to link to [beneighborly.xyz](https://beneighborly.xyz)!
+- [Create React App w/ Apollo Client](https://create-react-app.dev) - A popular tool for bootstrapping React applications. Apollo is used to interface with the GraphQL API.
 
-### `npm test`
+## Local Development Setup
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+To run Neighborly locally, follow these steps:
 
-### `npm run build`
+1. Clone the repository: `git clone https://github.com/your-username/neighborly.git`
+2. Navigate to the project directory: `cd neighborly`
+3. Install the dependencies: `npm install`
+4. Set up the required environment variables:
+   - Create a `.env` file in the root directory.
+   - Define the following environment variables in the `.env` file:
+     - `REACT_APP_API_BASE_URL`: The base URL of the API server (e.g., `http://localhost:5000`)
+     - `REACT_APP_GOOGLE_API_KEY`: Your Google Cloud API key for accessing Google services
+     - `REACT_APP_STORAGE_BUCKET_URL`: The URL of your Google Cloud Storage bucket
+5. Start the development server: `npm start`
+6. Open your browser and visit `http://localhost:3000` to view Neighborly.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+**Note:** You need to have MongoDB Realm and Google Cloud Services set up and configured with the necessary credentials and resources for full functionality. Please refer to the respective documentation for detailed setup instructions.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Deployment
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Neighborly is deployed using Google Cloud Run and can be accessed at [https://beneighborly.xyz](https://beneighborly.xyz). The deployment process involves building a Docker container and deploying it to Google Cloud Run. Make sure you have the necessary permissions and credentials set up to deploy the application to Google Cloud.
 
-### `npm run eject`
+To deploy Neighborly:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. Build the Docker image: `docker build -t neighborly .`
+2. Tag the image with the Google Container Registry URL: `docker tag neighborly gcr.io/[project-id]/neighborly`
+3. Push the image to the Google Container Registry: `docker push gcr.io/[project-id]/neighborly`
+4. Deploy the container to Google Cloud Run: `gcloud run deploy --image gcr.io/[project-id]/neighborly --platform managed`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Follow the prompts and configure the necessary settings during the deployment process.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Contributing
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+We welcome contributions to Neighborly! If you have any ideas, suggestions, or bug reports, please submit an issue or open a pull request. Make sure to follow the [contributing guidelines](CONTRIBUTING.md) when contributing to this project.
 
-## Learn More
+## License
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Neighborly is released under the [MIT License](LICENSE). Feel free to use, modify, and distribute the code as per the terms of the license.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Thank you for your interest in Neighborly! We hope this platform brings communities closer together and promotes responsible resource sharing. If you have any questions or need assistance, please don't hesitate to reach out to our support team at [support@beneighborly.xyz](mailto:support@beneighborly.xyz).

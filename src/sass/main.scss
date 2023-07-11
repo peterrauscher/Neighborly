@@ -88,12 +88,12 @@ button.link {
   }
 }
 
-button.is-green {
-  background-color: $primary;
+button.is-orange {
+  background-color: $orange;
   color: $white;
 
   &:hover {
-    background-color: $primary-light;
+    background-color: rgba($orange, 0.9);
     color: $white;
   }
 }
@@ -425,6 +425,14 @@ button.is-green {
   }
 }
 
+.sidebar {
+  .menu {
+    a.is-active {
+      background-color: $light-green;
+    }
+  }
+}
+
 .post {
   padding: 20px;
   border-radius: 6px;
@@ -512,3 +520,74 @@ span.is-fullwidth {
 }
 
 // PROFILE PAGE
+.section.user-profile {
+  padding-top: 16px;
+
+  .user-cover > img {
+    display: block;
+    max-height: 300px;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    .top {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-width: 30%;
+      padding: 0 20px;
+      height: 64px;
+      margin-bottom: 8px;
+    }
+    .bottom {
+      flex-grow: 2;
+      div {
+        margin: 0 auto;
+        text-align: center;
+      }
+      .stats {
+        color: $grey-light;
+        p {
+          padding: 0;
+          margin: 4px 0;
+        }
+        span:not(.icon) {
+          margin: 0 12px;
+        }
+      }
+    }
+  }
+
+  .user-avatar {
+    position: absolute;
+    top: -64px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    height: 128px;
+    width: 128px;
+    img {
+      height: 128px;
+      width: 128px;
+      border-radius: 50%;
+      border: 5px solid $white;
+      box-shadow: 0 0 0 1px $green;
+    }
+  }
+}
+
+.user-posts {
+  padding: 0 !important;
+
+  .post-feed {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+}

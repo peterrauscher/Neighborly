@@ -201,7 +201,7 @@ const Compose = ({ setShouldReload = null }) => {
             )}
           </label>
         </div>
-        <button className="button is-rounded is-green" onClick={handleNewPost}>
+        <button className="button is-rounded is-orange" onClick={handleNewPost}>
           <span className="icon is-small">
             <i className="fa fa-plus"></i>
           </span>
