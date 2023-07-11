@@ -74,3 +74,19 @@ export const USER = gql`
     }
   }
 `;
+
+export const USER_POSTS = gql`
+  query GetUserPosts($accountId: String!) {
+    posts(query: { authorId: $accountId }) {
+      authorId
+      neighborhood {
+        placeId
+        label
+      }
+      content
+      postType
+      postedAt
+      images
+    }
+  }
+`;

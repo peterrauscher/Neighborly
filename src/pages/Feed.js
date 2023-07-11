@@ -127,13 +127,20 @@ const Feed = ({ posts = "all" }) => {
           <div className="column is-6 scrollable">
             <Compose setShouldReload={setShouldReload} />
             <div className="post-feed">
-              {loadingPosts ? (
-                <Loading />
+              {neighborhood ? (
+                loadingPosts ? (
+                  <Loading />
+                ) : (
+                  dataPosts?.postsWithAuthors &&
+                  dataPosts?.postsWithAuthors.map((post) => {
+                    return <Post post={post} />;
+                  })
+                )
               ) : (
-                dataPosts?.postsWithAuthors &&
-                dataPosts?.postsWithAuthors.map((post) => {
-                  return <Post post={post} />;
-                })
+                <div className="notification is-success has-text-centered">
+                  Hey neighbor! You need to set where you live to start seeing
+                  or making posts.
+                </div>
               )}
             </div>
           </div>

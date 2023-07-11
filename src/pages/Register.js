@@ -129,7 +129,7 @@ const Register = () => {
                       />
                     </div>
                   </div>
-                  <button className="button is-block is-info is-fullwidth is-medium">
+                  <button className="button is-block is-orange is-fullwidth is-medium">
                     Create Account <i className="fa fa-sign-in"></i>
                   </button>
                   <br />
