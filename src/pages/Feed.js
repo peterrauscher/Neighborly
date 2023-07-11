@@ -115,12 +115,12 @@ const Feed = ({ posts = "all" }) => {
                       );
                     })}
                 </ul>
-                <p className="menu-label">
+                {/* <p className="menu-label">
                   <span className="icon is-small">
                     <i className="fas fa-filter"></i>
                   </span>
                   <span> Filters</span>
-                </p>
+                </p> */}
               </aside>
             </div>
           </div>

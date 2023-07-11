@@ -20,19 +20,13 @@ Check out the live version of Neighborly at [beneighborly.xyz](https://beneighbo
 
 To run Neighborly locally, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/your-username/neighborly.git`
-2. Navigate to the project directory: `cd neighborly`
+1. Clone the repository: `git clone https://github.com/peterrauscher/Neighborly.git`
+2. Navigate to the project directory: `cd Neighborly`
 3. Install the dependencies: `npm install`
-4. Set up the required environment variables:
-   - Create a `.env` file in the root directory.
-   - Define the following environment variables in the `.env` file:
-     - `REACT_APP_API_BASE_URL`: The base URL of the API server (e.g., `http://localhost:5000`)
-     - `REACT_APP_GOOGLE_API_KEY`: Your Google Cloud API key for accessing Google services
-     - `REACT_APP_STORAGE_BUCKET_URL`: The URL of your Google Cloud Storage bucket
-5. Start the development server: `npm start`
-6. Open your browser and visit `http://localhost:3000` to view Neighborly.
+4. Start the development server: `npm start`
+5. Open your browser and visit `http://localhost:3000` to view Neighborly.
 
-**Note:** You need to have MongoDB Realm and Google Cloud Services set up and configured with the necessary credentials and resources for full functionality. Please refer to the respective documentation for detailed setup instructions.
+> **Note:** Details about running with your own Atlas and Google Cloud instances coming soon. Right now, things are hardcoded to use my own infrastructure.
 
 ## Deployment
 
