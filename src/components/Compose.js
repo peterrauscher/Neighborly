@@ -1,16 +1,22 @@
-import { useContext, useState } from "react";
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import { useMutation } from "@apollo/client";
-import { INSERT_ONE_POST } from "../realm/graphql";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import Resizer from "react-image-file-resizer";
+import { useContext, useState } from "react";
 import { UserContext } from "../contexts/UserContext";
-import Modal from "./Modal";
+import { INSERT_ONE_POST } from "../realm/graphql";
+import { useModal } from "contexts/ModalContext";
+import Loading from "./Loading";
+import Alert from "./Alert";
 
-const Compose = () => {
+const Compose = ({ setShouldReload = null }) => {
   const [postType, setPostType] = useState("lend");
   const [postBody, setPostBody] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState(null);
-  const { user } = useContext(UserContext);
-  const [insertOnePost] = useMutation(INSERT_ONE_POST);
+  const [files, setFiles] = useState([]);
+  const { user, firebaseStorage } = useContext(UserContext);
+  const { showModal, setModalTimeout } = useModal();
+  const [insertOnePost, { data, loading, error }] =
+    useMutation(INSERT_ONE_POST);
 
   const setActive = (e) => {
     e.preventDefault();
@@ -23,28 +29,63 @@ const Compose = () => {
     setPostType(e.currentTarget.getAttribute("data-target"));
   };
 
+  const generateUniqueFileName = () =>
+    `${Math.random().toString(36).substring(2, 7)}_${new Date().getTime()}.jpg`;
+
   const handleNewPost = async (e) => {
     e.preventDefault();
-    try {
-      await insertOnePost({
+    showModal(<Loading />);
+    if (files.length > 5) {
+      console.error("Exceeded maximum number of images");
+      showModal(
+        <Alert
+          type="danger"
+          title="Post Error"
+          message="You are only allowed to upload 5 images per post."
+        />
+      );
+    } else {
+      const images = await Promise.all(
+        files.map(async (file) => {
+          const fileName = generateUniqueFileName();
+          const fileRef = ref(firebaseStorage, `images/${fileName}`);
+          await uploadBytes(fileRef, file);
+          return getDownloadURL(fileRef);
+        })
+      );
+
+      insertOnePost({
         variables: {
           data: {
-            authorId: user.id,
+            authorId: user.id.toString(),
+            neighborhood: user.customData.neighborhood,
+            images: images,
             content: postBody,
             postType: postType,
             postedAt: new Date(),
           },
         },
+        onCompleted: () => {
+          setPostBody("");
+          // @ts-ignore
+          document.getElementById("file-input").files.value = "";
+          showModal(
+            <Alert
+              type="success"
+              title="Success"
+              message="Your post was published!"
+            />
+          );
+          setModalTimeout(1);
+          if (setShouldReload) setShouldReload(true);
+        },
+        onError: () => {
+          console.error(error);
+          showModal(
+            <Alert type="danger" title="Post Error" message={error.message} />
+          );
+        },
       });
-      setPostBody("");
-      setModalContent(<p className="title is-1">Thanks for sharing!</p>);
-      setShowModal(true);
-    } catch (error) {
-      setModalContent(
-        <p className="title is-1">Uh oh! Something went wrong on our end.</p>
-      );
-      setShowModal(true);
-      console.error(error);
     }
   };
 
@@ -98,7 +139,11 @@ const Compose = () => {
         </ul>
       </div>
       <div className="compose">
-        <img className="avatar" src="https://via.placeholder.com/96"></img>
+        <img
+          className="avatar"
+          alt="Your avatar"
+          src={user.customData.avatar}
+        ></img>
         <div className="control">
           <textarea
             className="textarea"
@@ -109,24 +154,60 @@ const Compose = () => {
         </div>
       </div>
       <div className="options">
-        <button className="button is-rounded">
-          <span className="icon is-small">
-            <i className="fa fa-camera"></i>
-          </span>
-          <span>Media</span>
-        </button>
-        <button className="button is-rounded" onClick={handleNewPost}>
+        <div className={`file ${files.length > 0 ? "has-name" : ""}`}>
+          <label className="file-label">
+            <input
+              className="file-input"
+              type="file"
+              multiple={true}
+              id="file-input"
+              accept="image/png, image/jpeg"
+              onChange={async (e) => {
+                try {
+                  Promise.all(
+                    Array.from(e.currentTarget.files).map(
+                      (file) =>
+                        new Promise((resolve) => {
+                          Resizer.imageFileResizer(
+                            file,
+                            1024,
+                            1024,
+                            "JPEG",
+                            70,
+                            0,
+                            (uri) => {
+                              resolve(uri);
+                            },
+                            "file",
+                            300,
+                            300
+                          );
+                        })
+                    )
+                  ).then((resizedFiles) => setFiles(resizedFiles));
+                } catch (err) {
+                  console.log(err);
+                }
+              }}
+            />
+            <span className="file-cta">
+              <span className="file-icon">
+                <i className="fas fa-camera"></i>
+              </span>
+              <span className="file-label">Add Photos</span>
+            </span>
+            {files.length > 0 && (
+              <span className="file-name">{files.length} of 5 Max</span>
+            )}
+          </label>
+        </div>
+        <button className="button is-rounded is-green" onClick={handleNewPost}>
           <span className="icon is-small">
             <i className="fa fa-plus"></i>
           </span>
           <span>Publish</span>
         </button>
       </div>
-      <Modal
-        open={showModal}
-        setOpen={setShowModal}
-        content={modalContent}
-      ></Modal>
     </div>
   );
 };

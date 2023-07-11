@@ -1,19 +1,18 @@
 import Navigation from "../components/Navigation";
-import errorImage from "../images/error.png";
 
 const DefaultErrorPage = () => {
   return (
     <>
       <Navigation></Navigation>
       <section className="hero is-fullheight-with-navbar is-bold">
-        <div className="hero-body">
-          <div className="columns">
-            <div className="column">
-              <div className="box">
+        <div className="hero-body has-text-centered">
+          <div className="container">
+            <div className="columns">
+              <div className="column">
                 <figure className="image mx-auto my-6">
                   <img
                     className="error-img mx-auto"
-                    src={errorImage}
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/error.png"
                     alt="error"
                   />
                 </figure>

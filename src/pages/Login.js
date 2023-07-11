@@ -1,21 +1,28 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { UserContext } from "../contexts/UserContext";
 
+const EmptyForm = {
+  email: "",
+  password: "",
+};
+
 const Login = () => {
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState(EmptyForm);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, refreshUser, emailPasswordLogin } = useContext(UserContext);
-  const emailRef = useRef();
-  const passwordRef = useRef();
-  const formRef = useRef();
+  const { app, refreshUser, emailPasswordLogin } = useContext(UserContext);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const formRef = useRef(null);
 
   const loginUser = async () => {
-    await emailPasswordLogin(formData.email, formData.password);
-    setFormData({});
-    formRef.current.reset();
-    handleRedirect();
+    if (formData.email && formData.password) {
+      await emailPasswordLogin(formData.email, formData.password);
+      setFormData(EmptyForm);
+      if (formRef && formRef.current) formRef.current.reset();
+      handleRedirect();
+    }
   };
 
   const handleState = (e) => {
@@ -27,22 +34,23 @@ const Login = () => {
     loginUser();
   };
 
-  const handleRedirect = () => {
+  const handleRedirect = useCallback(() => {
     const goTo = location.search.replace("?redirect=", "");
     navigate(goTo ? goTo : "/");
-  };
+  }, [location.search, navigate]);
 
   const resetPassword = () => {};
 
   useEffect(() => {
     const loadUser = async () => {
-      if (!user) {
+      if (app.currentUser) handleRedirect();
+      else {
         const fetchedUser = await refreshUser();
         if (fetchedUser) handleRedirect();
       }
     };
     loadUser();
-  }, [user]);
+  }, [app.currentUser, refreshUser, handleRedirect]);
 
   useEffect(() => {
     emailRef.current.addEventListener("input", handleState);

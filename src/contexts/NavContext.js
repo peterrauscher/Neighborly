@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { useLocation } from "react-router";
 
-export const NavContext = createContext();
+export const NavContext = createContext(null);
 
 export const NavProvider = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
@@ -14,12 +14,10 @@ export const NavProvider = ({ children }) => {
       case "/feed":
         document.body.classList.add("not-scrollable");
         document.documentElement.classList.add("not-scrollable");
-        document.body.classList.remove("has-navbar-fixed-top");
         break;
       default:
         document.body.classList.remove("not-scrollable");
         document.documentElement.classList.remove("not-scrollable");
-        document.body.classList.add("has-navbar-fixed-top");
     }
   }, [location.pathname]);
 

@@ -8,10 +8,8 @@ const Home = () => {
           <div className="container">
             <div className="columns is-vcentered is-narrow">
               <div className="column content is-two-fifths">
-                <p className="title is-1 has-text-white-ter">
-                  Welcome To The Neighborhood
-                </p>
-                <p className="subtitle is-4 has-text-white-ter">
+                <p className="title is-1">Welcome To The Neighborhood</p>
+                <p className="subtitle is-4">
                   Unleash the power of sharing and strengthen your community
                   with Neighborly. Connect with neighbors to borrow, lend, and
                   trade responsibly.
@@ -33,7 +31,7 @@ const Home = () => {
                   <img
                     className="hero-img has-image-centered"
                     alt="Colorful row of houses"
-                    src="/images/neighborhood.png"
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/neighborhood.png"
                   ></img>
                 </figure>
               </div>
@@ -69,7 +67,7 @@ const Home = () => {
                 <figure className="image">
                   <img
                     className="has-image-centered"
-                    src="/images/foster-community.png"
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/foster-community.png"
                     alt="People walking together"
                   ></img>
                 </figure>
@@ -86,7 +84,7 @@ const Home = () => {
                 <figure className="image">
                   <img
                     className="has-image-centered"
-                    src="/images/live-sustainably.png"
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/live-sustainably.png"
                     alt="Man and woman recycling"
                   ></img>
                 </figure>
@@ -118,7 +116,7 @@ const Home = () => {
                 <figure className="image">
                   <img
                     className="has-image-centered"
-                    src="/images/save-money.png"
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/save-money.png"
                     alt="Piggy bank"
                   ></img>
                 </figure>
@@ -135,7 +133,7 @@ const Home = () => {
                 <figure className="image ">
                   <img
                     className="has-image-centered"
-                    src="/images/find-space.png"
+                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/find-space.png"
                     alt="Man and woman recycling"
                   ></img>
                 </figure>
@@ -165,70 +163,6 @@ const Home = () => {
           </Link>
         </div>
       </section>
-      <footer className="footer">
-        <div className="container">
-          <div className="columns">
-            <div className="column is-one-third">
-              <p>© {new Date().getFullYear()} Neighborly.</p>
-              <br />
-              <p>
-                For site inquiries, contact{" "}
-                <a className="link" href="mailto:support@beneighborly.xyz">
-                  support@beneighborly.xyz
-                </a>
-              </p>
-            </div>
-            <div className="column is-one-quarter">
-              <p className="label">Site</p>
-              <Link className="link" to="/feed">
-                <p>All Posts</p>
-              </Link>
-              <Link className="link" to="/feed/borrow">
-                <p>Borrow</p>
-              </Link>
-              <Link className="link" to="/feed/lend">
-                <p>Lend</p>
-              </Link>
-              <Link className="link" to="/feed/trade">
-                <p>Trade</p>
-              </Link>
-            </div>
-            <div className="column is-one-quarter">
-              <p className="label">Social</p>
-              <Link className="link" to="https://peterrauscher.com">
-                <p>Blog</p>
-              </Link>
-              <Link
-                className="link"
-                to="https://github.com/peterrauscher/Neighborly"
-              >
-                <p>Github</p>
-              </Link>
-              <Link
-                className="link"
-                to="https://devpost.com/software/neighborly-42ghs1"
-              >
-                <p>Devpost</p>
-              </Link>
-              <Link
-                className="link"
-                to="https://www.linkedin.com/in/peter-rauscher"
-              >
-                <p>Linkedin</p>
-              </Link>
-            </div>
-            <div className="column is-one-quarter">
-              <p className="label">Help</p>
-              <Link className="link" to="/support">
-                <p>Support</p>
-              </Link>
-              <Link className="link" to="/media">
-                <p>Inquiries</p>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
     </>
   );
 };

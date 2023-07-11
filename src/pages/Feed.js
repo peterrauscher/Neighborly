@@ -1,70 +1,181 @@
+import { useLazyQuery } from "@apollo/client";
+import Loading from "components/Loading";
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { POST, POSTS } from "../realm/graphql";
-import NeighborhoodSelect from "../components/NeighborhoodSelect";
 import Compose from "../components/Compose";
-import { UserContext } from "../contexts/UserContext";
-import axios from "axios";
-import { useMutation, useQuery } from "@apollo/client";
-import Loading from "components/Loading";
+import { NEIGHBORS, POSTS } from "../realm/graphql";
 import DefaultErrorPage from "./DefaultErrorPage";
-import Modal from "components/Modal";
+import LocationSelect from "../components/LocationSelect";
+import { UserContext } from "contexts/UserContext";
+import Post from "components/Post";
+import ReactTimeAgo from "react-time-ago";
 
-const Feed = () => {
-  const { loading, error, data } = useQuery(POSTS);
+const Feed = ({ posts = "all" }) => {
+  const { user, setUserNeighborhood } = useContext(UserContext);
+  const [neighborhood, setNeighborhood] = useState(
+    user.customData.neighborhood ? user.customData.neighborhood : null
+  );
+  const [shouldReload, setShouldReload] = useState(true);
+  const [
+    getAllPosts,
+    { loading: loadingPosts, error: errorPosts, data: dataPosts },
+  ] = useLazyQuery(POSTS, {
+    fetchPolicy: "network-only",
+  });
+  const [
+    getAllNeighbors,
+    { loading: loadingNeighbors, error: errorNeighbors, data: dataNeighbors },
+  ] = useLazyQuery(NEIGHBORS, {
+    fetchPolicy: "cache-first",
+  });
 
-  if (loading) return <Loading />;
-  if (error) return <DefaultErrorPage />;
+  const postLink = (type, href, text) => {
+    return { isActive: type === posts, type: type, href: href, text: text };
+  };
+
+  const postLinks = [
+    postLink("all", "/feed", "All Posts"),
+    postLink("lend", "/feed/lend", "Lend"),
+    postLink("borrow", "/feed/borrow", "Borrow"),
+    postLink("trade", "/feed/trade", "Trade"),
+  ];
+
+  // const postFilter = (type, text) => {};
+  // const postFilters = [postFilter()];
+
+  const handleNeighborhoodChange = (n) => {
+    setNeighborhood({
+      label: n.label,
+      placeId: n.value.place_id,
+    });
+    setUserNeighborhood({
+      label: n.label,
+      placeId: n.value.place_id,
+    });
+  };
+
+  useEffect(() => {
+    if (neighborhood) {
+      getAllPosts({
+        variables: {
+          placeId: neighborhood.placeId,
+          postType: posts,
+        },
+      });
+      setShouldReload(false);
+    }
+  }, [neighborhood, shouldReload, getAllPosts, posts]);
+
+  useEffect(() => {
+    if (neighborhood)
+      getAllNeighbors({ variables: { placeId: neighborhood.placeId } });
+  }, [neighborhood, getAllNeighbors]);
+
+  if (errorPosts || errorNeighbors) return <DefaultErrorPage />;
 
   return (
-    <div className="feed">
-      <div className="columns">
-        <div className="column is-3">
-          <div className="box sidebar">
-            <NeighborhoodSelect />
-            <Link to="/feed">
-              <p>All Posts</p>
-            </Link>
-            <Link to="/feed/lend">
-              <p>Lend</p>
-            </Link>
-            <Link to="/feed/borrow">
-              <p>Borrow</p>
-            </Link>
-            <Link to="/feed/trade">
-              <p>Trade</p>
-            </Link>
+    <div className="container">
+      <div className="feed">
+        <div className="columns">
+          <div className="column is-3 sidebar-left">
+            <div className="box sidebar">
+              <div className="maps-selector">
+                <p className="menu-label">
+                  <span className="icon is-small">
+                    <i className="fas fa-location-dot"></i>
+                  </span>
+                  <span> Neighborhood</span>
+                </p>
+                <LocationSelect
+                  neighborhood={neighborhood}
+                  setNeighborhood={handleNeighborhoodChange}
+                />
+              </div>
+            </div>
+            <div className="box sidebar">
+              <aside className="menu">
+                <p className="menu-label">
+                  <span className="icon is-small">
+                    <i className="fas fa-rss"></i>
+                  </span>
+                  <span> Posts</span>
+                </p>
+                <ul className="menu-list">
+                  {postLinks &&
+                    postLinks.map((link) => {
+                      return (
+                        <li key={link.type}>
+                          <Link
+                            className={link.isActive ? "is-active" : ""}
+                            to={link.href}
+                          >
+                            <p>{link.text}</p>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                </ul>
+                <p className="menu-label">
+                  <span className="icon is-small">
+                    <i className="fas fa-filter"></i>
+                  </span>
+                  <span> Filters</span>
+                </p>
+              </aside>
+            </div>
           </div>
-          <div className="box sidebar">
-            <p className="heading">FILTERS</p>
+          <div className="column is-6 scrollable">
+            <Compose setShouldReload={setShouldReload} />
+            <div className="post-feed">
+              {loadingPosts ? (
+                <Loading />
+              ) : (
+                dataPosts?.postsWithAuthors &&
+                dataPosts?.postsWithAuthors.map((post) => {
+                  return <Post post={post} />;
+                })
+              )}
+            </div>
           </div>
-        </div>
-        <div className="column scrollable">
-          <Compose />
-          <div className="post-feed">
-            {data?.posts &&
-              data.posts.map((post) => (
-                <div className="card post" key={post.id}>
-                  <article className="media">
-                    {post.images && (
-                      <div className="media-left">
-                        <figure className="image is-64x64">
-                          <img src={post.images[0]} alt="Post" />
-                        </figure>
-                      </div>
-                    )}
-                    <div className="media-content">
-                      <div className="content">
+          <div className="column is-3 sidebar-right">
+            <div className="box sidebar">
+              <p className="menu-label">
+                <span className="icon is-small">
+                  <i className="fas fa-user-group"></i>
+                </span>
+                <span> Neighbors</span>
+              </p>
+              {loadingNeighbors ? (
+                <Loading />
+              ) : (
+                dataNeighbors?.users &&
+                dataNeighbors?.users?.map((user) => {
+                  return (
+                    <div className="neighbor-block">
+                      <img
+                        className="avatar"
+                        src={user.avatar}
+                        alt={
+                          user.name
+                            ? `${user.name}'s avatar`
+                            : "Neighbor's avatar"
+                        }
+                      />
+                      <div>
+                        <a href={`/user/${user.accountId}`}>{user.name}</a>
                         <p>
-                          <strong>{post.authorId}</strong>
-                          <br />
-                          {post.content}
+                          Last active{" "}
+                          <ReactTimeAgo
+                            date={user.lastActive}
+                            locale="en-US"
+                          ></ReactTimeAgo>
                         </p>
                       </div>
                     </div>
-                  </article>
-                </div>
-              ))}
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
       </div>
