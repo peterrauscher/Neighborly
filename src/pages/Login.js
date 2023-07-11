@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { UserContext } from "../contexts/UserContext";
 
@@ -12,22 +12,17 @@ const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { app, refreshUser, emailPasswordLogin } = useContext(UserContext);
-  const emailRef = useRef(null);
-  const passwordRef = useRef(null);
-  const formRef = useRef(null);
 
   const loginUser = async () => {
     if (formData.email && formData.password) {
       await emailPasswordLogin(formData.email, formData.password);
       setFormData(EmptyForm);
-      if (formRef && formRef.current) formRef.current.reset();
       handleRedirect();
     }
   };
 
-  const handleState = (e) => {
+  const handleState = (e) =>
     setFormData((data) => ({ ...data, [e.target.name]: e.target.value }));
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -52,11 +47,6 @@ const Login = () => {
     loadUser();
   }, [app.currentUser, refreshUser, handleRedirect]);
 
-  useEffect(() => {
-    emailRef.current.addEventListener("input", handleState);
-    passwordRef.current.addEventListener("input", handleState);
-  });
-
   return (
     <div className="has-background-green">
       <section className="container">
@@ -65,7 +55,7 @@ const Login = () => {
             <div className="login columns">
               <div className="column">
                 <h1 className="title is-3">Welcome back</h1>
-                <form ref={formRef} onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit}>
                   <div className="field">
                     <div className="control">
                       <input
@@ -73,7 +63,8 @@ const Login = () => {
                         type="email"
                         name="email"
                         placeholder="Email"
-                        ref={emailRef}
+                        value={formData.email}
+                        onChange={handleState}
                       />
                     </div>
                   </div>
@@ -85,7 +76,8 @@ const Login = () => {
                         type="password"
                         name="password"
                         placeholder="Password"
-                        ref={passwordRef}
+                        value={formData.password}
+                        onChange={handleState}
                       />
                     </div>
                   </div>
