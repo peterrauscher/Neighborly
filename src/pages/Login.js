@@ -2,11 +2,13 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { UserContext } from "../contexts/UserContext";
 
+const EmptyForm = {
+  email: "",
+  password: "",
+};
+
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState(EmptyForm);
   const location = useLocation();
   const navigate = useNavigate();
   const { app, refreshUser, emailPasswordLogin } = useContext(UserContext);
@@ -17,10 +19,7 @@ const Login = () => {
   const loginUser = async () => {
     if (formData.email && formData.password) {
       await emailPasswordLogin(formData.email, formData.password);
-      setFormData({
-        email: "",
-        password: "",
-      });
+      setFormData(EmptyForm);
       if (formRef && formRef.current) formRef.current.reset();
       handleRedirect();
     }

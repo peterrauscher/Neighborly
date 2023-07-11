@@ -1,17 +1,8 @@
 @charset "utf-8";
-@import "../../node_modules/bulma/bulma.sass";
-@import url("https://fonts.googleapis.com/css?family=Open+Sans");
 
-$blue: #33658a;
-$cyan: #86bbd8;
-$dark-green: #081c15;
-$darkish-green: #1b4332;
-$green: #52b788;
-$lightish-green: #95d5b2;
-$light-green: #b7e4c7;
-$orange: #f26419;
-$yellow: #f6ae2d;
-$background: #d8f3dc;
+@import "variables";
+@import "../../node_modules/bulma/bulma.sass";
+@import "overrides";
 
 // GLOBAL STYLES
 
@@ -21,7 +12,6 @@ html {
 
 body {
   height: 100vh;
-  font-family: Inter, sans-serif;
 }
 
 .title {
@@ -67,12 +57,12 @@ body {
 }
 
 input:hover {
-  border-color: $green !important;
+  border-color: $grey-dark !important;
 }
 
 input:focus {
-  border-color: $green !important;
-  box-shadow: 0 0 0 1px $green !important;
+  border-color: $grey-dark !important;
+  box-shadow: 0 0 0 1px $grey-dark !important;
 }
 
 .link {
@@ -99,14 +89,30 @@ button.link {
 }
 
 button.is-green {
-  background-color: $green;
+  background-color: $primary;
   color: $white;
 
   &:hover {
-    background-color: #74c69d;
+    background-color: $primary-light;
     color: $white;
   }
 }
+
+.modal .message {
+  .message-header {
+    width: 100%;
+    p {
+      font-size: larger;
+      margin: 0 auto;
+      text-align: center;
+    }
+  }
+  .message-body {
+    font-size: medium;
+  }
+}
+
+// FOOTER
 
 .footer {
   background-color: $black;
@@ -162,7 +168,13 @@ button.is-green {
 }
 
 .home-hero {
-  background-color: $darkish-green;
+  background-color: $green;
+  .title {
+    color: $white;
+  }
+  .subtitle {
+    color: $white-ter;
+  }
 }
 
 .benefits {
@@ -391,6 +403,7 @@ button.is-green {
 
     ul {
       border-radius: 6px 6px 0 0;
+      font-weight: 600;
 
       li {
         border-radius: 6px 6px 0 0;
@@ -405,9 +418,6 @@ button.is-green {
         a {
           span {
             color: #494949;
-            i {
-              color: #40916c;
-            }
           }
         }
       }
@@ -422,15 +432,40 @@ button.is-green {
   &:last-child {
     margin-bottom: 1.5rem;
   }
-}
 
-div.post-author {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  .post-top {
+    display: flex;
+    margin-bottom: 20px;
+  }
 
-  .author-info {
-    margin-left: 12px;
+  .post-avatar {
+    flex: initial;
+    height: 100%;
+  }
+
+  .post-content {
+    flex: 1;
+    margin-left: 16px;
+  }
+
+  .card-heading {
+    padding-bottom: 12px;
+  }
+
+  .card-content {
+    padding: 0;
+    text-align: left;
+  }
+
+  .gallery {
+    max-height: 1024px;
+    height: 512px;
+  }
+
+  .post-author {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
 
     p.post-time {
       color: $grey-light;
@@ -457,3 +492,23 @@ img.avatar {
 span.is-fullwidth {
   width: 100%;
 }
+
+// CONTACT PAGE
+
+.contact-hero {
+  .social-media {
+    margin-top: 30px;
+    a {
+      font-size: 3rem;
+      margin-right: 20px;
+      i {
+        color: $link;
+      }
+    }
+  }
+  .contact-field:not(:last-child) {
+    margin-bottom: 20px;
+  }
+}
+
+// PROFILE PAGE

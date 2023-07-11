@@ -6,7 +6,7 @@ const autoPrefix = require("gulp-autoprefixer");
 const concatenate = require("gulp-concat");
 const imagemin = require("gulp-imagemin");
 
-const sassFiles = ["./src/sass/*.s?ss"];
+const sassFiles = ["./src/sass/main.scss"];
 const imageFiles = ["./src/images/*.+(png|jpg|gif|svg)"];
 
 gulp.task("sass", () => {

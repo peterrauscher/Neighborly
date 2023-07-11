@@ -5,12 +5,16 @@ import Resizer from "react-image-file-resizer";
 import { useContext, useState } from "react";
 import { UserContext } from "../contexts/UserContext";
 import { INSERT_ONE_POST } from "../realm/graphql";
+import { useModal } from "contexts/ModalContext";
+import Loading from "./Loading";
+import Alert from "./Alert";
 
 const Compose = ({ setShouldReload = null }) => {
   const [postType, setPostType] = useState("lend");
   const [postBody, setPostBody] = useState("");
   const [files, setFiles] = useState([]);
   const { user, firebaseStorage } = useContext(UserContext);
+  const { showModal, setModalTimeout } = useModal();
   const [insertOnePost, { data, loading, error }] =
     useMutation(INSERT_ONE_POST);
 
@@ -30,9 +34,16 @@ const Compose = ({ setShouldReload = null }) => {
 
   const handleNewPost = async (e) => {
     e.preventDefault();
+    showModal(<Loading />);
     if (files.length > 5) {
       console.error("Exceeded maximum number of images");
-      // TODO: display error modal
+      showModal(
+        <Alert
+          type="danger"
+          title="Post Error"
+          message="You are only allowed to upload 5 images per post."
+        />
+      );
     } else {
       const images = await Promise.all(
         files.map(async (file) => {
@@ -58,10 +69,21 @@ const Compose = ({ setShouldReload = null }) => {
           setPostBody("");
           // @ts-ignore
           document.getElementById("file-input").files.value = "";
+          showModal(
+            <Alert
+              type="success"
+              title="Success"
+              message="Your post was published!"
+            />
+          );
+          setModalTimeout(1);
           if (setShouldReload) setShouldReload(true);
         },
         onError: () => {
           console.error(error);
+          showModal(
+            <Alert type="danger" title="Post Error" message={error.message} />
+          );
         },
       });
     }
@@ -132,7 +154,7 @@ const Compose = ({ setShouldReload = null }) => {
         </div>
       </div>
       <div className="options">
-        <div className="file">
+        <div className={`file ${files.length > 0 ? "has-name" : ""}`}>
           <label className="file-label">
             <input
               className="file-input"
@@ -174,6 +196,9 @@ const Compose = ({ setShouldReload = null }) => {
               </span>
               <span className="file-label">Add Photos</span>
             </span>
+            {files.length > 0 && (
+              <span className="file-name">{files.length} of 5 Max</span>
+            )}
           </label>
         </div>
         <button className="button is-rounded is-green" onClick={handleNewPost}>

@@ -162,7 +162,7 @@ const Feed = ({ posts = "all" }) => {
                         }
                       />
                       <div>
-                        <a href={`/users/${user.accountId}`}>{user.name}</a>
+                        <a href={`/user/${user.accountId}`}>{user.name}</a>
                         <p>
                           Last active{" "}
                           <ReactTimeAgo

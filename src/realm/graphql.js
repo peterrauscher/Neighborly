@@ -59,3 +59,18 @@ export const NEIGHBORS = gql`
     }
   }
 `;
+
+export const USER = gql`
+  query GetUser($accountId: String!) {
+    user(query: { accountId: $accountId }) {
+      accountId
+      name
+      avatar
+      lastActive
+      neighborhood {
+        placeId
+        label
+      }
+    }
+  }
+`;

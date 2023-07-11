@@ -70,7 +70,7 @@ const Navigation = () => {
             id="navigation-logo"
             alt="Logo"
             aria-label="Logo"
-            src="https://storage.cloud.google.com/beneighborly.xyz/assets/logo-text.png"
+            src="https://storage.cloud.google.com/beneighborly.xyz/assets/logo-text.svg"
           />
         </Link>
         <button

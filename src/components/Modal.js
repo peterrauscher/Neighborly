@@ -1,29 +1,18 @@
-import { useEffect, useState } from "react";
+import React from "react";
+import { useModal } from "contexts/ModalContext";
 
-const Modal = ({
-  content = null,
-  open = false,
-  setOpen = (b) => {},
-  modalId = "page-modal",
-}) => {
-  useEffect(() => {
-    document.addEventListener("keydown", (event) => {
-      const e = event || window.event;
-      if (e.keyCode === 27) {
-        setOpen(false);
-      }
-    });
-  });
+const Modal = () => {
+  const { isModalVisible, modalContent, hideModal } = useModal();
 
   return (
-    <div id={modalId} className={"modal" + (open ? " is-active" : "")}>
-      <div className="modal-background"></div>
-      <div className="modal-content has-text-centered">
-        <div className="box">
-          <div className="container">{content && content}</div>
-        </div>
-      </div>
-      <button className="modal-close is-large" aria-label="close"></button>
+    <div className={`modal ${isModalVisible ? "is-active" : ""}`}>
+      <div className="modal-background" onClick={hideModal}></div>
+      <div className="modal-content has-text-centered">{modalContent}</div>
+      <button
+        className="modal-close is-large"
+        aria-label="close"
+        onClick={hideModal}
+      ></button>
     </div>
   );
 };
