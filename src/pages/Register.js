@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { UserContext } from "../contexts/UserContext";
 
@@ -14,11 +14,6 @@ const Register = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState(EmptyForm);
-  const nameRef = useRef(null);
-  const emailRef = useRef(null);
-  const passwordRef = useRef(null);
-  const confirmPasswordRef = useRef(null);
-  const formRef = useRef(null);
 
   const registerUser = async () => {
     console.log(formData);
@@ -29,13 +24,11 @@ const Register = () => {
       formData.confirmPassword
     );
     setFormData(EmptyForm);
-    if (formRef && formRef.current) formRef.current.reset();
     handleRedirect();
   };
 
-  const handleState = (e) => {
+  const handleState = (e) =>
     setFormData((data) => ({ ...data, [e.target.name]: e.target.value }));
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -58,13 +51,6 @@ const Register = () => {
     loadUser();
   }, [app.currentUser, refreshUser, handleRedirect]);
 
-  useEffect(() => {
-    nameRef.current.addEventListener("input", handleState);
-    emailRef.current.addEventListener("input", handleState);
-    passwordRef.current.addEventListener("input", handleState);
-    confirmPasswordRef.current.addEventListener("input", handleState);
-  });
-
   return (
     <div className="has-background-green">
       <section className="container">
@@ -81,7 +67,7 @@ const Register = () => {
               </div>
               <div className="column is-half right">
                 <h1 className="title is-3">Sign up for free</h1>
-                <form ref={formRef} onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit}>
                   <div className="field">
                     <div className="control">
                       <input
@@ -89,7 +75,8 @@ const Register = () => {
                         type="text"
                         placeholder="Name"
                         name="name"
-                        ref={nameRef}
+                        value={formData.name}
+                        onChange={handleState}
                       />
                     </div>
                   </div>
@@ -101,7 +88,8 @@ const Register = () => {
                         type="email"
                         placeholder="Email"
                         name="email"
-                        ref={emailRef}
+                        value={formData.email}
+                        onChange={handleState}
                       />
                     </div>
                   </div>
@@ -113,7 +101,8 @@ const Register = () => {
                         type="password"
                         placeholder="Password"
                         name="password"
-                        ref={passwordRef}
+                        value={formData.password}
+                        onChange={handleState}
                       />
                     </div>
                   </div>
@@ -125,7 +114,8 @@ const Register = () => {
                         type="password"
                         placeholder="Confirm Password"
                         name="confirmPassword"
-                        ref={confirmPasswordRef}
+                        value={formData.confirmPassword}
+                        onChange={handleState}
                       />
                     </div>
                   </div>
