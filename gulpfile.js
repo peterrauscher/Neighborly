@@ -7,7 +7,7 @@ const concatenate = require("gulp-concat");
 const imagemin = require("gulp-imagemin");
 
 const sassFiles = ["./src/sass/main.scss"];
-const imageFiles = ["./src/images/*.+(png|jpg|gif|svg)"];
+const imageFiles = ["./assets/*.+(png|jpg|gif|svg)"];
 
 gulp.task("sass", () => {
   return gulp

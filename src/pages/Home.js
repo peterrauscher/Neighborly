@@ -31,7 +31,7 @@ const Home = () => {
                   <img
                     className="hero-img has-image-centered"
                     alt="Colorful row of houses"
-                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/neighborhood.png"
+                    src="/images/neighborhood.png"
                   ></img>
                 </figure>
               </div>
@@ -67,7 +67,7 @@ const Home = () => {
                 <figure className="image">
                   <img
                     className="has-image-centered"
-                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/foster-community.png"
+                    src="/images/foster-community.png"
                     alt="People walking together"
                   ></img>
                 </figure>
@@ -84,7 +84,7 @@ const Home = () => {
                 <figure className="image">
                   <img
                     className="has-image-centered"
-                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/live-sustainably.png"
+                    src="/images/live-sustainably.png"
                     alt="Man and woman recycling"
                   ></img>
                 </figure>
@@ -116,7 +116,7 @@ const Home = () => {
                 <figure className="image">
                   <img
                     className="has-image-centered"
-                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/save-money.png"
+                    src="/images/save-money.png"
                     alt="Piggy bank"
                   ></img>
                 </figure>
@@ -133,7 +133,7 @@ const Home = () => {
                 <figure className="image ">
                   <img
                     className="has-image-centered"
-                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/find-space.png"
+                    src="/images/find-space.png"
                     alt="Man and woman recycling"
                   ></img>
                 </figure>

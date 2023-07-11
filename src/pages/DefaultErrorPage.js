@@ -12,7 +12,7 @@ const DefaultErrorPage = () => {
                 <figure className="image mx-auto my-6">
                   <img
                     className="error-img mx-auto"
-                    src="https://storage.cloud.google.com/beneighborly.xyz/assets/error.png"
+                    src="/images/error.png"
                     alt="error"
                   />
                 </figure>

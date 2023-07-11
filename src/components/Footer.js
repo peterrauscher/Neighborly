@@ -56,9 +56,9 @@ const Footer = () => {
           </div>
           <div className="column is-one-quarter">
             <p className="label">Help</p>
-            <Link className="link" to="/help">
+            {/* <Link className="link" to="/help">
               <p>Support</p>
-            </Link>
+            </Link> */}
             <Link className="link" to="/contact">
               <p>Contact Us</p>
             </Link>
