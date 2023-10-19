@@ -37,7 +37,7 @@ const Register = () => {
 
   const handleRedirect = useCallback(() => {
     const goTo = location.search.replace("?redirect=", "");
-    navigate(goTo ? goTo : "/");
+    navigate(goTo === "" ? "/feed" : goTo);
   }, [location.search, navigate]);
 
   useEffect(() => {

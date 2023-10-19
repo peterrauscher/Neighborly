@@ -4,9 +4,11 @@
 
 Neighborly is a community-driven platform that connects people within the same city or neighborhood, allowing them to responsibly borrow, lend, or trade various items like tools, vehicles, or extra storage space. It aims to foster a sense of community, promote sustainability, and reduce waste and consumption by facilitating resource sharing among neighbors.
 
-## We're Live!
+## Atlas Madness 2023 Grand Prize Winner!
 
-Check out the live version of Neighborly at [beneighborly.xyz](https://beneighborly.xyz).
+![Atlas Madness 2023 Banner](/assets/hackathon-banner.png)
+
+Neighborly was built as my submission to the Atlas Madness 2023 Hackathon, sponsored by Google and MongoDB. It was awarded with the Grand Prize, you can check out the submission over on [Devpost](https://devpost.com/software/neighborly-42ghs1)! A big thank you to Google, MongoDB, and all of the judges for putting together such a fun event.
 
 ## Technologies Used
 

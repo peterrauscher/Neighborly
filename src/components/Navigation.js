@@ -32,11 +32,11 @@ const Navigation = () => {
     if (isNavActive) {
       accountButtons = (
         <>
-          <Link to="/register" className="navbar-item">
-            Sign up
-          </Link>
           <Link to="/login" className="navbar-item">
             Log in
+          </Link>
+          <Link to="/register" className="navbar-item">
+            Register
           </Link>
         </>
       );
@@ -44,13 +44,13 @@ const Navigation = () => {
       accountButtons = (
         <>
           <div className="navbar-item pr-2">
-            <Link to="/register" className="button is-dark">
-              Sign up
+            <Link to="/login" className="button is-dark is-outlined">
+              Log in
             </Link>
           </div>
           <div className="navbar-item pl-2">
-            <Link to="/login" className="button is-dark is-outlined">
-              Log in
+            <Link to="/register" className="button is-dark">
+              Register
             </Link>
           </div>
         </>
