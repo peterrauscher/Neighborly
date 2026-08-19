@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900">
+<defs>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap');
+        text { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .font-sans { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+        .shadow-sm { filter: drop-shadow(0px 2px 4px rgba(18, 27, 23, 0.04)); }
+        .shadow-md { filter: drop-shadow(0px 8px 16px rgba(18, 27, 23, 0.08)); }
+    </style>
+    <linearGradient id="forestGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1E5631" />
+        <stop offset="100%" stop-color="#143D22" />
+    </linearGradient>
+    <linearGradient id="sageGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#F6F8F6" />
+        <stop offset="100%" stop-color="#EEF2EF" />
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#121B17" flood-opacity="0.06"/>
+    </filter>
+</defs>
+<!-- Background Canvas -->
+<rect width="1440" height="900" fill="#F6F8F6"/>
+
+<!-- CTA BANNER TIER (Top 550px) -->
+<g transform="translate(64, 60)">
+    <rect width="1312" height="460" rx="28" fill="#121B17" filter="url(#cardShadow)"/>
+    
+    <!-- Accent subtle graphic motif -->
+    <path d="M0 0 L300 460 L0 460 Z" fill="#1E5631" opacity="0.3"/>
+    <circle cx="1200" cy="100" r="180" fill="#1E5631" opacity="0.15"/>
+
+    <g transform="translate(96, 80)">
+        <!-- Tagline -->
+        <rect width="170" height="28" rx="14" fill="#1E5631"/>
+        <text x="85" y="18" font-size="11" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="1px">START SHARING TODAY</text>
+
+        <!-- Big Headline H2 -->
+        <text x="0" y="80" font-size="44" font-weight="800" fill="#FFFFFF" letter-spacing="-1.5px">
+            <tspan x="0" dy="0">Ready to meet your neighborhood’s</tspan>
+            <tspan x="0" dy="56" fill="#A8E0B8">shared shed?</tspan>
+        </text>
+
+        <!-- Subheadline -->
+        <text x="0" y="210" font-size="18" font-weight="400" fill="#A3B8CC">
+            Join neighbors lending tools, sharing gear, and reducing local waste today.
+        </text>
+
+        <!-- Actions -->
+        <g transform="translate(0, 250)">
+            <rect width="250" height="56" rx="14" fill="#1E5631" stroke="#2D8249" stroke-width="1"/>
+            <text x="125" y="34" font-size="16" font-weight="800" fill="#FFFFFF" text-anchor="middle">Try Instant Read-Only Demo →</text>
+
+            <rect x="270" width="280" height="56" rx="14" fill="transparent" stroke="#A3B8CC" stroke-width="1.5"/>
+            <text x="410" y="34" font-size="15" font-weight="600" fill="#FFFFFF" text-anchor="middle">Read Open Data &amp; Privacy Standards</text>
+        </g>
+
+        <!-- Trust Note -->
+        <text x="0" y="335" font-size="13" font-weight="500" fill="#798880">
+            No credit card required • Pure open-source civic utility • Single-command reproducible setup
+        </text>
+    </g>
+</g>
+
+<!-- FOOTER TIER (Bottom 320px) -->
+<g transform="translate(64, 560)">
+    <rect width="1312" height="280" rx="20" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+    
+    <g transform="translate(48, 48)">
+        <!-- Col 1: Brand & Identity (Width 320px) -->
+        <g transform="translate(0, 0)">
+            <!-- Logo Icon -->
+            <rect x="0" y="0" width="32" height="32" rx="8" fill="#E4EFE7"/>
+            <path fill="#1E5631" d="M16 4 L8 20 L14 20 L11 26 L21 26 L18 20 L24 20 Z"/>
+            <text x="42" y="22" font-size="20" font-weight="800" fill="#121B17">neighborly</text>
+
+            <text x="0" y="60" font-size="14" font-weight="400" fill="#526059" width="280">
+                <tspan x="0" dy="0">Civic resource sharing for local</tspan>
+                <tspan x="0" dy="20">communities. Borrow, lend, and trade</tspan>
+                <tspan x="0" dy="20">with neighbors nearby.</tspan>
+            </text>
+        </g>
+
+        <!-- Col 2: Product Links (Width 220px) -->
+        <g transform="translate(360, 0)">
+            <text x="0" y="16" font-size="13" font-weight="800" fill="#121B17" letter-spacing="0.5px">PRODUCT</text>
+            <text x="0" y="44" font-size="14" font-weight="500" fill="#526059">Explore Feed</text>
+            <text x="0" y="70" font-size="14" font-weight="500" fill="#526059">Demo Principal Account</text>
+            <text x="0" y="96" font-size="14" font-weight="500" fill="#526059">How Handoffs Work</text>
+            <text x="0" y="122" font-size="14" font-weight="500" fill="#526059">Atlas Madness Story</text>
+        </g>
+
+        <!-- Col 3: Trust & Code (Width 220px) -->
+        <g transform="translate(620, 0)">
+            <text x="0" y="16" font-size="13" font-weight="800" fill="#121B17" letter-spacing="0.5px">TRUST &amp; CODE</text>
+            <text x="0" y="44" font-size="14" font-weight="500" fill="#526059">Privacy Policy</text>
+            <text x="0" y="70" font-size="14" font-weight="500" fill="#526059">Security Invariants</text>
+            <text x="0" y="96" font-size="14" font-weight="500" fill="#526059">Open Source Repo</text>
+            <text x="0" y="122" font-size="14" font-weight="500" fill="#526059">Architecture Specification</text>
+        </g>
+
+        <!-- Col 4: Neighborhoods (Width 220px) -->
+        <g transform="translate(880, 0)">
+            <text x="0" y="16" font-size="13" font-weight="800" fill="#121B17" letter-spacing="0.5px">NEIGHBORHOODS</text>
+            <text x="0" y="44" font-size="14" font-weight="500" fill="#526059">Maplewood</text>
+            <text x="0" y="70" font-size="14" font-weight="500" fill="#526059">Oakridge</text>
+            <text x="0" y="96" font-size="14" font-weight="500" fill="#526059">Sunset District</text>
+            <text x="0" y="122" font-size="14" font-weight="500" fill="#526059">Seeded Local Graph</text>
+        </g>
+
+        <!-- Bottom Divider & Copyright Bar -->
+        <line x1="0" y1="160" x2="1216" y2="160" stroke="#EEF2EF" stroke-width="1"/>
+        <text x="0" y="195" font-size="13" font-weight="500" fill="#798880">
+            © 2026 Neighborly. Built with Bun 1.3+, React 18, SQLite &amp; Zod. Released under MIT License.
+        </text>
+        <text x="1216" y="195" font-size="13" font-weight="700" fill="#1E5631" text-anchor="end">
+            No ad scripts • Private by design
+        </text>
+    </g>
+</g>
+</svg>

@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900">
+<defs>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap');
+        text { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .font-sans { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+        .shadow-sm { filter: drop-shadow(0px 2px 4px rgba(18, 27, 23, 0.04)); }
+        .shadow-md { filter: drop-shadow(0px 8px 16px rgba(18, 27, 23, 0.08)); }
+    </style>
+    <linearGradient id="forestGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1E5631" />
+        <stop offset="100%" stop-color="#143D22" />
+    </linearGradient>
+    <linearGradient id="sageGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#F6F8F6" />
+        <stop offset="100%" stop-color="#EEF2EF" />
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#121B17" flood-opacity="0.06"/>
+    </filter>
+</defs>
+<!-- Background Canvas -->
+<rect width="1440" height="900" fill="#F6F8F6"/>
+
+<g transform="translate(64, 60)">
+    <!-- Header -->
+    <rect width="160" height="30" rx="15" fill="#E4EFE7"/>
+    <text x="80" y="20" font-size="12" font-weight="700" fill="#1E5631" text-anchor="middle" letter-spacing="0.5px">REAL-TIME DISCOVERY</text>
+
+    <text x="0" y="76" font-size="36" font-weight="800" fill="#121B17" letter-spacing="-1px">
+        Explore active resources in Maplewood.
+    </text>
+
+    <!-- LIVE FEED FILTER BAR SURFACE -->
+    <g transform="translate(0, 105)">
+        <rect width="1312" height="72" rx="16" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+        
+        <!-- Search Input -->
+        <g transform="translate(20, 16)">
+            <rect width="380" height="40" rx="10" fill="#EEF2EF"/>
+            <text x="16" y="25" font-size="14" font-weight="500" fill="#798880">🔍 Search ladders, camping gear, mowers...</text>
+        </g>
+
+        <!-- Category Chips -->
+        <g transform="translate(420, 20)">
+            <rect width="84" height="32" rx="16" fill="#1E5631"/>
+            <text x="42" y="21" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">All</text>
+
+            <rect x="96" width="94" height="32" rx="16" fill="#EEF2EF"/>
+            <text x="143" y="21" font-size="13" font-weight="600" fill="#526059" text-anchor="middle">Lend</text>
+
+            <rect x="200" width="102" height="32" rx="16" fill="#EEF2EF"/>
+            <text x="251" y="21" font-size="13" font-weight="600" fill="#526059" text-anchor="middle">Borrow</text>
+
+            <rect x="312" width="94" height="32" rx="16" fill="#EEF2EF"/>
+            <text x="359" y="21" font-size="13" font-weight="600" fill="#526059" text-anchor="middle">Trade</text>
+        </g>
+
+        <!-- Distance & Sort Dropdowns -->
+        <g transform="translate(1080, 20)">
+            <rect width="212" height="32" rx="8" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1"/>
+            <text x="16" y="21" font-size="13" font-weight="600" fill="#121B17">📍 Nearby ▾</text>
+        </g>
+    </g>
+
+    <!-- ASYMMETRIC FEED SHOWCASE GRID (1 Large Featured Listing + 2 Supporting Cards) -->
+    <g transform="translate(0, 200)">
+        
+        <!-- CARD 1: FEATURED LARGE LISTING (Left - Width 640px) -->
+        <g transform="translate(0, 0)">
+            <rect width="640" height="580" rx="20" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+            
+            <!-- Photo Crop -->
+            <rect x="24" y="24" width="592" height="300" rx="14" fill="#E2EBE4"/>
+            <rect x="140" y="70" width="360" height="200" rx="12" fill="#1E5631" opacity="0.85"/>
+            <text x="320" y="175" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">[ Thule 4-Bike Hitch Rack ]</text>
+            
+            <!-- Type Chip -->
+            <rect x="40" y="40" width="72" height="28" rx="14" fill="#1E5631"/>
+            <text x="76" y="58" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle">LEND</text>
+
+            <!-- Save Heart -->
+            <circle cx="580" cy="54" r="18" fill="#FFFFFF" opacity="0.9"/>
+            <text x="580" y="59" font-size="16" fill="#1E5631" text-anchor="middle">♥</text>
+
+            <g transform="translate(24, 344)">
+                <text x="0" y="24" font-size="22" font-weight="800" fill="#121B17">Thule T2 Pro XTR 4-Bike Hitch Rack</text>
+                <text x="0" y="48" font-size="14" font-weight="500" fill="#526059">Fits 2" hitch receiver. Includes locking cables</text>
+                
+                <rect y="64" width="592" height="48" rx="8" fill="#F6F8F6"/>
+                <text x="16" y="93" font-size="13" font-weight="600" fill="#1E5631">Available: May 12 to May 20 • Free community borrowing</text>
+
+                <!-- Owner Row -->
+                <g transform="translate(0, 130)">
+                    <circle cx="18" cy="18" r="18" fill="#1E5631"/>
+                    <text x="18" y="23" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">ER</text>
+                    <text x="46" y="16" font-size="14" font-weight="700" fill="#121B17">Elena R.</text>
+                    <text x="46" y="32" font-size="12" font-weight="500" fill="#798880">5.0 ★</text>
+
+                    <rect x="452" y="0" width="140" height="40" rx="10" fill="#1E5631"/>
+                    <text x="522" y="25" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">Request Lend</text>
+                </g>
+            </g>
+        </g>
+
+        <!-- CARD 2: SUPPORTING LISTING 1 (Top Right - Width 640px, Height 275px) -->
+        <g transform="translate(672, 0)">
+            <rect width="640" height="275" rx="20" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+            
+            <rect x="20" y="20" width="220" height="235" rx="14" fill="#EEF2EF"/>
+            <text x="130" y="135" font-size="13" font-weight="600" fill="#526059" text-anchor="middle">[ 22ft Ladder ]</text>
+            
+            <g transform="translate(260, 36)">
+                <rect width="70" height="24" rx="12" fill="#E4EFE7"/>
+                <text x="35" y="16" font-size="11" font-weight="800" fill="#1E5631" text-anchor="middle">LEND</text>
+
+                <text x="0" y="52" font-size="18" font-weight="800" fill="#121B17">Little Giant 22ft Extension Ladder</text>
+                <text x="0" y="76" font-size="13" font-weight="500" fill="#526059">Multi-position heavy duty ladder</text>
+                <text x="0" y="96" font-size="12" font-weight="600" fill="#1E5631">Owner: Marcus K. (4.9 ★)</text>
+
+                <rect y="120" width="140" height="38" rx="8" fill="#1E5631"/>
+                <text x="70" y="144" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">View Details</text>
+            </g>
+        </g>
+
+        <!-- CARD 3: SUPPORTING LISTING 2 (Bottom Right - Width 640px, Height 285px) -->
+        <g transform="translate(672, 295)">
+            <rect width="640" height="285" rx="20" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+            
+            <rect x="20" y="20" width="220" height="245" rx="14" fill="#FEF3C7"/>
+            <text x="130" y="140" font-size="13" font-weight="600" fill="#92400E" text-anchor="middle">[ Post Hole Digger ]</text>
+
+            <g transform="translate(260, 36)">
+                <rect width="84" height="24" rx="12" fill="#FFF3E0"/>
+                <text x="42" y="16" font-size="11" font-weight="800" fill="#D97706" text-anchor="middle">BORROW</text>
+
+                <text x="0" y="52" font-size="18" font-weight="800" fill="#121B17">WANTED: Heavy Duty Post Hole Digger</text>
+                <text x="0" y="76" font-size="13" font-weight="500" fill="#526059">Needed for weekend fence post repair</text>
+                <text x="0" y="96" font-size="12" font-weight="600" fill="#D97706">Offering: Fresh homemade honey or sourdough</text>
+
+                <rect y="124" width="160" height="38" rx="8" fill="#D97706"/>
+                <text x="80" y="148" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">Offer Item to Lend</text>
+            </g>
+        </g>
+    </g>
+</g>
+</svg>

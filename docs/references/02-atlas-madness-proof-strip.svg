@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900">
+<defs>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap');
+        text { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .font-sans { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+        .shadow-sm { filter: drop-shadow(0px 2px 4px rgba(18, 27, 23, 0.04)); }
+        .shadow-md { filter: drop-shadow(0px 8px 16px rgba(18, 27, 23, 0.08)); }
+    </style>
+    <linearGradient id="forestGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1E5631" />
+        <stop offset="100%" stop-color="#143D22" />
+    </linearGradient>
+    <linearGradient id="sageGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#F6F8F6" />
+        <stop offset="100%" stop-color="#EEF2EF" />
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#121B17" flood-opacity="0.06"/>
+    </filter>
+</defs>
+<!-- Background Canvas -->
+<rect width="1440" height="900" fill="#F6F8F6"/>
+
+<!-- SECTION CONTAINER -->
+<g transform="translate(64, 80)">
+    <!-- Header Badge -->
+    <rect width="320" height="32" rx="16" fill="#E4EFE7"/>
+    <text x="160" y="21" font-size="12" font-weight="700" fill="#1E5631" text-anchor="middle" letter-spacing="0.5px">Atlas Madness 2023 Grand Prize Winner</text>
+
+    <!-- Main Proof Title -->
+    <text x="0" y="90" font-size="40" font-weight="800" fill="#121B17" letter-spacing="-1px">
+        A privacy-first neighborhood sharing demo.
+    </text>
+    <text x="0" y="125" font-size="17" font-weight="400" fill="#526059">
+        Built for Atlas Madness 2023, a hackathon sponsored by Google and MongoDB.
+    </text>
+
+    <!-- MongoDB Banner Graphic Element Integration Box -->
+    <g transform="translate(0, 160)">
+        <rect width="1312" height="140" rx="20" fill="#121B17" filter="url(#cardShadow)"/>
+        <!-- Accent lines mimicking hackathon banner -->
+        <path d="M0 0 L200 140 L0 140 Z" fill="#1E5631" opacity="0.4"/>
+        <path d="M1312 0 L1112 140 L1312 140 Z" fill="#00ED64" opacity="0.15"/>
+        
+        <!-- Banner Content -->
+        <g transform="translate(48, 42)">
+            <rect width="140" height="28" rx="6" fill="#00ED64"/>
+            <text x="70" y="19" font-size="12" font-weight="800" fill="#121B17" text-anchor="middle">DEMO PROJECT</text>
+            <text x="160" y="24" font-size="24" font-weight="800" fill="#FFFFFF">Atlas Madness Hackathon</text>
+            <text x="160" y="50" font-size="14" font-weight="400" fill="#A3B8CC">A hackathon sponsored by Google and MongoDB.</text>
+        </g>
+        
+        <g transform="translate(1080, 45)">
+            <rect width="180" height="50" rx="12" fill="#FFFFFF" opacity="0.1" stroke="#FFFFFF" stroke-width="1"/>
+            <text x="90" y="30" font-size="14" font-weight="700" fill="#00ED64" text-anchor="middle">Demo Concept</text>
+        </g>
+    </g>
+
+    <!-- ASYMMETRIC METRICS CALLOUT STRIP (Distinct 3-Column Width Hierarchy) -->
+    <g transform="translate(0, 330)">
+        <!-- Metric Box 1: Large Anchor (40% width) -->
+        <rect width="510" height="220" rx="20" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+        <rect x="0" y="0" width="510" height="8" rx="4" fill="#1E5631"/>
+        <g transform="translate(36, 44)">
+            <text x="0" y="44" font-size="42" font-weight="800" fill="#1E5631" letter-spacing="-1.5px">LOCAL</text>
+            <text x="0" y="80" font-size="20" font-weight="700" fill="#121B17">Peer-to-Peer Requests</text>
+            <text x="0" y="108" font-size="14" font-weight="400" fill="#526059" width="430">
+                <tspan x="0" dy="0">Coordinate directly when a request is approved.</tspan>
+                <tspan x="0" dy="22">The demo keeps sharing workflows simple.</tspan>
+            </text>
+        </g>
+
+        <!-- Metric Box 2: Medium (30% width) -->
+        <g transform="translate(534, 0)">
+            <rect width="374" height="220" rx="20" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+            <g transform="translate(36, 44)">
+                <text x="0" y="44" font-size="42" font-weight="800" fill="#121B17" letter-spacing="-1.5px">SHARE</text>
+                <text x="0" y="80" font-size="20" font-weight="700" fill="#121B17">Borrow or Lend</text>
+                <text x="0" y="108" font-size="14" font-weight="400" fill="#526059">
+                    <tspan x="0" dy="0">Offer useful items or request</tspan>
+                    <tspan x="0" dy="22">what you need for a project.</tspan>
+                </text>
+            </g>
+        </g>
+
+        <!-- Metric Box 3: Medium (30% width) -->
+        <g transform="translate(932, 0)">
+            <rect width="380" height="220" rx="20" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+            <g transform="translate(36, 44)">
+                <text x="0" y="44" font-size="42" font-weight="800" fill="#121B17" letter-spacing="-1.5px">DEMO</text>
+                <text x="0" y="80" font-size="20" font-weight="700" fill="#121B17">Explore the Workflow</text>
+                <text x="0" y="108" font-size="14" font-weight="400" fill="#526059">
+                    <tspan x="0" dy="0">Browse sample listings and see</tspan>
+                    <tspan x="0" dy="22">how requests can take shape.</tspan>
+                </text>
+            </g>
+        </g>
+    </g>
+
+    <!-- Jury Recognition Quote Banner -->
+    <g transform="translate(0, 580)">
+        <rect width="1312" height="140" rx="20" fill="#EEF2EF" stroke="#DDE4E0" stroke-width="1"/>
+        <path d="M48 30 L48 70 M40 40 L56 40" stroke="#1E5631" stroke-width="3" stroke-linecap="round"/>
+        <g transform="translate(80, 48)">
+            <text x="0" y="18" font-size="18" font-style="italic" font-weight="500" fill="#121B17">
+                “A concept for sharing useful things within a neighborhood.”
+            </text>
+            <text x="0" y="52" font-size="14" font-weight="700" fill="#1E5631">Neighborly demo concept</text>
+        </g>
+    </g>
+</g>
+</svg>

@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900">
+<defs>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap');
+        text { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .font-sans { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+        .shadow-sm { filter: drop-shadow(0px 2px 4px rgba(18, 27, 23, 0.04)); }
+        .shadow-md { filter: drop-shadow(0px 8px 16px rgba(18, 27, 23, 0.08)); }
+    </style>
+    <linearGradient id="forestGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1E5631" />
+        <stop offset="100%" stop-color="#143D22" />
+    </linearGradient>
+    <linearGradient id="sageGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#F6F8F6" />
+        <stop offset="100%" stop-color="#EEF2EF" />
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#121B17" flood-opacity="0.06"/>
+    </filter>
+</defs>
+<!-- Background Canvas -->
+<rect width="1440" height="900" fill="#F6F8F6"/>
+
+<g transform="translate(64, 70)">
+    <!-- Header -->
+    <rect width="190" height="30" rx="15" fill="#E4EFE7"/>
+    <text x="95" y="20" font-size="12" font-weight="700" fill="#1E5631" text-anchor="middle" letter-spacing="0.5px">THREE INTERACTION MODES</text>
+
+    <text x="0" y="80" font-size="38" font-weight="800" fill="#121B17" letter-spacing="-1px">
+        Designed for how neighbors actually exchange goods.
+    </text>
+    <text x="0" y="112" font-size="16" font-weight="400" fill="#526059">
+        Structured request lifecycles defend both owner availability and borrower expectations.
+    </text>
+
+    <!-- ASYMMETRIC RHYTHM LAYOUT (60% Main Feature Card + Stacked 40% Right Column Cards) -->
+    <g transform="translate(0, 150)">
+        
+        <!-- CARD 1: LEND (Dominant Feature Card - 60% Width = 770px) -->
+        <g transform="translate(0, 0)">
+            <rect width="770" height="600" rx="24" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+            <rect x="0" y="0" width="770" height="10" rx="5" fill="#1E5631"/>
+            
+            <g transform="translate(48, 48)">
+                <rect width="72" height="28" rx="14" fill="#E4EFE7"/>
+                <text x="36" y="18" font-size="13" font-weight="800" fill="#1E5631" text-anchor="middle">LEND</text>
+                
+                <text x="0" y="70" font-size="28" font-weight="800" fill="#121B17">Put underused gear to work</text>
+                <text x="0" y="100" font-size="15" font-weight="400" fill="#526059">List tools or equipment you own. Set custom availability windows and deposit preferences.</text>
+
+                <!-- Listing Card Interactive Mockup -->
+                <g transform="translate(0, 130)">
+                    <rect width="674" height="340" rx="16" fill="#F8FAF8" stroke="#DDE4E0" stroke-width="1"/>
+                    
+                    <!-- Left Photo Column -->
+                    <rect x="24" y="24" width="260" height="292" rx="12" fill="#DCE8DE"/>
+                    <rect x="64" y="80" width="180" height="140" rx="8" fill="#1E5631" opacity="0.7"/>
+                    <text x="154" y="155" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">[ Makita Lawn Mower ]</text>
+
+                    <!-- Right Specs Column -->
+                    <g transform="translate(308, 36)">
+                        <text x="0" y="24" font-size="20" font-weight="700" fill="#121B17">Makita 36V Cordless Mower</text>
+                        <text x="0" y="48" font-size="13" font-weight="500" fill="#798880">Category: Lawn Care • Condition: Like New</text>
+
+                        <!-- Schedule & Controls -->
+                        <rect y="68" width="340" height="64" rx="10" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1"/>
+                        <text x="16" y="94" font-size="12" font-weight="600" fill="#798880">Availability Schedule</text>
+                        <text x="16" y="116" font-size="14" font-weight="700" fill="#1E5631">May 1 – Oct 31 • Weekends &amp; Evenings</text>
+
+                        <!-- Active Status Row -->
+                        <g transform="translate(0, 152)">
+                            <circle cx="10" cy="10" r="5" fill="#1E5631"/>
+                            <text x="24" y="14" font-size="13" font-weight="600" fill="#121B17">Active Listing • Ready for requests</text>
+                        </g>
+
+                        <!-- Action Bar -->
+                        <g transform="translate(0, 190)">
+                            <rect width="160" height="44" rx="10" fill="#1E5631"/>
+                            <text x="80" y="27" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">Manage Availability</text>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+
+        <!-- CARD 2: BORROW (Upper Right - 40% Width = 510px, Height = 285px) -->
+        <g transform="translate(802, 0)">
+            <rect width="510" height="285" rx="24" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+            <rect x="0" y="0" width="510" height="8" rx="4" fill="#D97706"/>
+            
+            <g transform="translate(36, 32)">
+                <rect width="90" height="26" rx="13" fill="#FFF3E0"/>
+                <text x="45" y="17" font-size="12" font-weight="800" fill="#D97706" text-anchor="middle">BORROW</text>
+
+                <text x="0" y="60" font-size="22" font-weight="800" fill="#121B17">Request tools on demand</text>
+                <text x="0" y="86" font-size="14" font-weight="400" fill="#526059">Pick requested start and end dates with structured messaging.</text>
+
+                <!-- Date Picker Preview -->
+                <g transform="translate(0, 110)">
+                    <rect width="438" height="96" rx="12" fill="#FEFCE8" stroke="#FDE68A" stroke-width="1"/>
+                    <text x="20" y="32" font-size="12" font-weight="700" fill="#B45309">REQUESTED DATES</text>
+                    <rect x="20" y="44" width="180" height="36" rx="8" fill="#FFFFFF" stroke="#FCD34D" stroke-width="1"/>
+                    <text x="32" y="67" font-size="13" font-weight="700" fill="#121B17">Sat May 10, 2026</text>
+                    <text x="210" y="67" font-size="14" font-weight="700" fill="#B45309">→</text>
+                    <rect x="230" y="44" width="180" height="36" rx="8" fill="#FFFFFF" stroke="#FCD34D" stroke-width="1"/>
+                    <text x="242" y="67" font-size="13" font-weight="700" fill="#121B17">Sun May 11, 2026</text>
+                </g>
+            </g>
+        </g>
+
+        <!-- CARD 3: TRADE (Lower Right - 40% Width = 510px, Height = 290px) -->
+        <g transform="translate(802, 310)">
+            <rect width="510" height="290" rx="24" fill="#FFFFFF" stroke="#DDE4E0" stroke-width="1" filter="url(#cardShadow)"/>
+            <rect x="0" y="0" width="510" height="8" rx="4" fill="#0284C7"/>
+            
+            <g transform="translate(36, 32)">
+                <rect width="76" height="26" rx="13" fill="#E0F2FE"/>
+                <text x="38" y="17" font-size="12" font-weight="800" fill="#0284C7" text-anchor="middle">TRADE</text>
+
+                <text x="0" y="60" font-size="22" font-weight="800" fill="#121B17">Propose reciprocal trades</text>
+                <text x="0" y="86" font-size="14" font-weight="400" fill="#526059">Swap garden surplus, skills, or specialized tools direct.</text>
+
+                <!-- Bilateral Exchange Preview -->
+                <g transform="translate(0, 110)">
+                    <rect width="438" height="100" rx="12" fill="#F0F9FF" stroke="#BAE6FD" stroke-width="1"/>
+                    <g transform="translate(20, 24)">
+                        <text x="0" y="16" font-size="11" font-weight="700" fill="#0369A1">OFFERED ITEM</text>
+                        <text x="0" y="38" font-size="15" font-weight="700" fill="#121B17">Organic Tomato Starts</text>
+                    </g>
+                    <circle cx="219" cy="50" r="18" fill="#0284C7"/>
+                    <text x="219" y="55" font-size="16" font-weight="800" fill="#FFFFFF" text-anchor="middle">⇄</text>
+                    <g transform="translate(260, 24)">
+                        <text x="0" y="16" font-size="11" font-weight="700" fill="#0369A1">WANTED ITEM</text>
+                        <text x="0" y="38" font-size="15" font-weight="700" fill="#121B17">Sourdough Starter</text>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</g>
+</svg>
