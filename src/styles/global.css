@@ -1,0 +1,155 @@
+/**
+ * Global Styles and CSS Reset for Neighborly
+ */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	font-family: var(--font-sans);
+	font-size: 16px;
+	line-height: var(--leading-normal);
+	color: var(--color-ink-primary);
+	background-color: var(--color-bg-base);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
+body {
+	min-height: 100vh;
+	background-color: var(--color-bg-base);
+	color: var(--color-ink-primary);
+	overflow-x: hidden;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: var(--color-ink-primary);
+	font-family: var(--font-sans);
+	font-weight: var(--font-weight-bold);
+	line-height: var(--leading-tight);
+	letter-spacing: -0.02em;
+}
+
+h1 {
+	font-size: var(--text-4xl);
+}
+h2 {
+	font-size: var(--text-3xl);
+}
+h3 {
+	font-size: var(--text-2xl);
+}
+h4 {
+	font-size: var(--text-xl);
+}
+h5 {
+	font-size: var(--text-lg);
+}
+h6 {
+	font-size: var(--text-base);
+}
+
+p {
+	color: var(--color-ink-secondary);
+	line-height: var(--leading-normal);
+}
+
+a {
+	color: var(--color-forest);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	transition: color var(--transition-fast);
+}
+
+a:hover {
+	color: var(--color-forest-hover);
+}
+
+/* Base Form Control Reset */
+button,
+input,
+optgroup,
+select,
+textarea {
+	font: inherit;
+	color: inherit;
+	background: transparent;
+	border: none;
+	outline: none;
+}
+
+button {
+	cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+	cursor: not-allowed;
+}
+
+img,
+svg,
+video,
+canvas {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}
+
+/* High Contrast & Reduced Motion Safe Keyboard Focus */
+:focus {
+	outline: none;
+}
+
+:focus-visible {
+	outline: var(--focus-ring-width) solid var(--color-focus-ring);
+	outline-offset: var(--focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* Layout Utilities */
+.container {
+	width: 100%;
+	max-width: var(--container-max-width);
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: var(--container-padding);
+	padding-right: var(--container-padding);
+}
+
+/* Visually Hidden Helper Class */
+.srOnly {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+}

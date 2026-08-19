@@ -1,0 +1,128 @@
+/**
+ * Civic-Modern Design Tokens for Neighborly
+ * Surfaces: cool off-white, pale sage
+ * Action: forest green
+ * Secondary: restrained apricot
+ * Ink: deep charcoal hierarchy
+ * Radii: 6px (sm/badge/control), 12px (md/button/input), 16px (lg/surface/card)
+ */
+
+:root {
+	/* Surfaces */
+	--color-bg-base: #f7faf8;
+	--color-bg-surface: #ffffff;
+	--color-bg-subtle: #f0f4f1;
+	--color-bg-muted: #e4ebe6;
+	--color-bg-accent-subtle: #fef5f0;
+
+	/* Ink Hierarchy */
+	--color-ink-primary: #121915;
+	--color-ink-secondary: #3b4d43;
+	--color-ink-muted: #64776c;
+	--color-ink-on-accent: #ffffff;
+
+	/* Primary Action Accent - Forest */
+	--color-forest: #1b4332;
+	--color-forest-hover: #143527;
+	--color-forest-active: #0e271c;
+	--color-forest-subtle: #e8f2ec;
+
+	/* Secondary Accent - Apricot */
+	--color-apricot: #e07a5f;
+	--color-apricot-hover: #cb654b;
+	--color-apricot-subtle: #fbf0ec;
+
+	/* Semantic Feedback States */
+	--color-error: #c93b3b;
+	--color-error-bg: #fcf0f0;
+	--color-error-border: #f4c7c7;
+
+	--color-warning: #d97706;
+	--color-warning-bg: #fffbe6;
+	--color-warning-border: #fef08a;
+
+	--color-success: #2d6a4f;
+	--color-success-bg: #edf7f2;
+	--color-success-border: #b7e4c7;
+
+	/* Borders & Dividers */
+	--color-border: #d5ded8;
+	--color-border-subtle: #e6ece8;
+	--color-border-hover: #a3b8ab;
+	--color-border-focus: #1b4332;
+
+	/* Focus Ring Indicator */
+	--color-focus-ring: #1b4332;
+	--focus-ring-offset: 2px;
+	--focus-ring-width: 2px;
+	--focus-ring: 0 0 0 var(--focus-ring-width) var(--color-focus-ring);
+
+	/* Typography */
+	--font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont,
+		"Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+		sans-serif;
+	--font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		"Liberation Mono", "Courier New", monospace;
+
+	/* Font Scale */
+	--text-xs: 0.75rem; /* 12px */
+	--text-sm: 0.875rem; /* 14px */
+	--text-base: 1rem; /* 16px */
+	--text-lg: 1.125rem; /* 18px */
+	--text-xl: 1.25rem; /* 20px */
+	--text-2xl: 1.5rem; /* 24px */
+	--text-3xl: 1.875rem; /* 30px */
+	--text-4xl: 2.25rem; /* 36px */
+
+	/* Font Weights */
+	--font-weight-regular: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+	--font-weight-bold: 700;
+
+	/* Line Heights */
+	--leading-tight: 1.2;
+	--leading-snug: 1.35;
+	--leading-normal: 1.5;
+	--leading-relaxed: 1.625;
+
+	/* Spacing Scale (4px base) */
+	--space-0-5: 0.125rem; /* 2px */
+	--space-1: 0.25rem; /* 4px */
+	--space-2: 0.5rem; /* 8px */
+	--space-3: 0.75rem; /* 12px */
+	--space-4: 1rem; /* 16px */
+	--space-5: 1.25rem; /* 20px */
+	--space-6: 1.5rem; /* 24px */
+	--space-8: 2rem; /* 32px */
+	--space-10: 2.5rem; /* 40px */
+	--space-12: 3rem; /* 48px */
+	--space-16: 4rem; /* 64px */
+
+	/* Border Radii per Roadmap specifications */
+	--radius-sm: 6px; /* Compact controls, badges, chips */
+	--radius-md: 12px; /* Standard controls: buttons, inputs, selects */
+	--radius-lg: 16px; /* Content surfaces: cards, containers */
+	--radius-full: 9999px; /* Full pill for avatar, status dots */
+
+	/* Shadows */
+	--shadow-xs: 0 1px 2px rgba(18, 25, 21, 0.05);
+	--shadow-sm: 0 2px 4px rgba(18, 25, 21, 0.06);
+	--shadow-md: 0 4px 12px rgba(18, 25, 21, 0.08);
+	--shadow-lg: 0 8px 24px rgba(18, 25, 21, 0.12);
+
+	/* Transitions */
+	--transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+	--transition-base: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+	--transition-slow: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+
+	/* Layout Container */
+	--container-max-width: 1200px;
+	--container-padding: var(--space-4);
+}
+
+@media (min-width: 768px) {
+	:root {
+		--container-padding: var(--space-6);
+	}
+}

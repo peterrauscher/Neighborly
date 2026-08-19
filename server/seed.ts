@@ -1,4 +1,5 @@
 import type { Database } from "bun:sqlite";
+import { randomBytes } from "node:crypto";
 import { resolve } from "node:path";
 
 import type {
@@ -106,6 +107,12 @@ type SeedListingImage = {
 	altText: string;
 	sortOrder: number;
 	createdAt: number;
+};
+
+export type SeedMode = "development" | "public-demo";
+
+type SeedOptions = {
+	mode?: SeedMode;
 };
 
 const baseNow = Date.UTC(2026, 7, 19);
@@ -1429,15 +1436,21 @@ const insertListingImage = (db: Database) =>
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
   `);
 
-export async function seedDatabase(db: Database): Promise<void> {
+export async function seedDatabase(
+	db: Database,
+	{ mode = "development" }: SeedOptions = {},
+): Promise<void> {
 	validateSeedFixtures();
 
 	const usersWithHashes = await Promise.all(
 		userRows.map(async (user) => ({
 			...user,
-			passwordHash: await Bun.password.hash(user.password, {
-				algorithm: "argon2id",
-			}),
+			passwordHash: await Bun.password.hash(
+				mode === "development"
+					? user.password
+					: randomBytes(32).toString("base64url"),
+				{ algorithm: "argon2id" },
+			),
 		})),
 	);
 
@@ -1451,9 +1464,22 @@ export async function seedDatabase(db: Database): Promise<void> {
 	const preparedMessage = insertMessage(db);
 	const preparedReview = insertReview(db);
 	const preparedImage = insertListingImage(db);
+	const updateFixturePassword = db.prepare(
+		"UPDATE users SET password_hash = ? WHERE id = ?",
+	);
+	const deleteFixtureSessions = db.prepare(
+		"DELETE FROM sessions WHERE user_id = ?",
+	);
 
 	db.run("BEGIN IMMEDIATE");
 	try {
+		if (mode === "public-demo") {
+			for (const user of usersWithHashes) {
+				updateFixturePassword.run(user.passwordHash, user.id);
+				deleteFixtureSessions.run(user.id);
+			}
+		}
+
 		for (const row of neighborhoodRows) {
 			preparedNeighborhood.run(
 				row.id,

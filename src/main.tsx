@@ -4,7 +4,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "@fontsource/plus-jakarta-sans/latin.css";
 
-import "./sass/main.scss";
+import "./styles/tokens.css";
+import "./styles/global.css";
 import App from "./components/App";
 
 TimeAgo.addDefaultLocale(en);
