@@ -15,6 +15,7 @@ import {
 	apiRequest,
 	clearCsrfToken,
 	isAbortError,
+	subscribeToAuthInvalidation,
 } from "../lib/api";
 import type { SelfUser } from "../lib/contracts";
 
@@ -118,6 +119,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
 		},
 		[isCurrentRequest, setAuthState],
 	);
+
+	const invalidateAuthenticatedSession = useCallback(() => {
+		pendingRequestRef.current?.controller.abort();
+		pendingRequestRef.current = undefined;
+		requestIdRef.current += 1;
+		clearCsrfToken();
+
+		if (!mountedRef.current || stateRef.current.status === "anonymous") return;
+		setAuthState({ status: "anonymous", user: null });
+	}, [setAuthState]);
 
 	const commitRestoreFailure = useCallback(
 		(pending: PendingRequest, error: unknown) => {
@@ -253,15 +264,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
 			commitAnonymous(pending);
 		} catch (error) {
 			if (isAbortError(error)) return;
-			if (error instanceof ApiError && error.status === 401) {
-				await restoreSession();
-				return;
-			}
 			throw error;
 		} finally {
 			finishRequest(pending);
 		}
-	}, [commitAnonymous, finishRequest, restoreSession, startRequest]);
+	}, [commitAnonymous, finishRequest, startRequest]);
 
 	const updateProfile = useCallback(
 		async (input: ApiRequestBody<"mePatch">): Promise<SelfUser | undefined> => {
@@ -276,15 +283,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
 					: undefined;
 			} catch (error) {
 				if (isAbortError(error)) return undefined;
-				if (error instanceof ApiError && error.status === 401) {
-					void restoreSession();
-				}
 				throw error;
 			} finally {
 				finishRequest(pending);
 			}
 		},
-		[commitAuthenticated, finishRequest, restoreSession, startRequest],
+		[commitAuthenticated, finishRequest, startRequest],
 	);
 
 	const changePassword = useCallback(
@@ -298,15 +302,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
 				commitAnonymous(pending);
 			} catch (error) {
 				if (isAbortError(error)) return;
-				if (error instanceof ApiError && error.status === 401) {
-					void restoreSession();
-				}
 				throw error;
 			} finally {
 				finishRequest(pending);
 			}
 		},
-		[commitAnonymous, finishRequest, restoreSession, startRequest],
+		[commitAnonymous, finishRequest, startRequest],
 	);
 
 	const changeNeighborhood = useCallback(
@@ -316,13 +317,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
 	useEffect(() => {
 		mountedRef.current = true;
+		const unsubscribe = subscribeToAuthInvalidation(
+			invalidateAuthenticatedSession,
+		);
 		void restoreSession();
 		return () => {
+			unsubscribe();
 			mountedRef.current = false;
 			pendingRequestRef.current?.controller.abort();
 			pendingRequestRef.current = undefined;
 		};
-	}, [restoreSession]);
+	}, [invalidateAuthenticatedSession, restoreSession]);
 
 	const value = useMemo<AuthContextValue>(
 		() => ({

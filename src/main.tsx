@@ -1,5 +1,3 @@
-import TimeAgo from "javascript-time-ago";
-import en from "javascript-time-ago/locale/en.json";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "@fontsource/plus-jakarta-sans/latin.css";
@@ -7,8 +5,6 @@ import "@fontsource/plus-jakarta-sans/latin.css";
 import "./styles/tokens.css";
 import "./styles/global.css";
 import App from "./components/App";
-
-TimeAgo.addDefaultLocale(en);
 
 const rootElement = document.getElementById("root");
 

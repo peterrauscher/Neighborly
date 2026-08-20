@@ -5,6 +5,7 @@ import {
 	type MemberProfile,
 	type MemberUser,
 	type MessageDto,
+	type ProfileExchangeHistoryItem,
 	type RequestParticipant,
 	type ReviewDto,
 	type SelfUser,
@@ -44,6 +45,10 @@ type RequestRow = {
 	cancellationReason: string | null;
 	createdAt: number;
 	updatedAt: number;
+};
+
+type RequestDtoRow = RequestRow & {
+	hasViewerReview: number;
 };
 
 type ListingRequestRow = {
@@ -97,6 +102,24 @@ type ProfileAggregateRow = {
 	aggregateRating: number | null;
 	totalRequests: number;
 	respondedRequests: number;
+};
+
+type ProfileExchangeHistoryRow = {
+	requestId: string;
+	listingId: string;
+	listingTitle: string;
+	listingType: ListingType;
+	role: "owner" | "requester";
+	completedAt: number;
+	reviewId: string | null;
+	reviewRating: number | null;
+	reviewBody: string | null;
+	reviewCreatedAt: number | null;
+	reviewerId: string | null;
+	reviewerName: string | null;
+	reviewerHandle: string | null;
+	reviewerAvatarPath: string | null;
+	reviewerBio: string | null;
 };
 
 type CreateRequestInput =
@@ -194,6 +217,12 @@ const requestProjection = `
 	r.updated_at AS updatedAt
 `;
 
+const requestDtoProjection = `${requestProjection},
+	EXISTS(
+		SELECT 1 FROM reviews viewer_review
+		WHERE viewer_review.request_id = r.id AND viewer_review.reviewer_id = ?
+	) AS hasViewerReview`;
+
 export type InteractionServiceOptions = {
 	db: Database;
 	now?: () => number;
@@ -272,13 +301,13 @@ export class InteractionService {
 					now,
 				);
 		});
-		return this.#mapRequest(this.#requestById(id));
+		return this.#mapRequest(this.#requestDtoById(id, viewer.id));
 	}
 
 	requests(viewer: Viewer, input: RequestListInput) {
 		const limit = input.limit ?? DEFAULT_PAGE_LIMIT;
 		const role = input.role ?? "all";
-		const values: SQLQueryBindings[] = [];
+		const values: SQLQueryBindings[] = [viewer.id];
 		let roleSql: string;
 		switch (role) {
 			case "owner":
@@ -306,9 +335,9 @@ export class InteractionService {
 			values.push(cursor.timestamp, cursor.timestamp, cursor.id);
 		}
 		values.push(limit + 1);
-		const rows = getAll<RequestRow>(
+		const rows = getAll<RequestDtoRow>(
 			this.#db,
-			`SELECT ${requestProjection}
+			`SELECT ${requestDtoProjection}
 			 FROM requests r
 			 JOIN listings l ON l.id = r.listing_id
 			 JOIN users owner ON owner.id = l.owner_id
@@ -354,7 +383,7 @@ export class InteractionService {
 					break;
 			}
 		});
-		return this.#mapRequest(this.#requestById(requestId));
+		return this.#mapRequest(this.#requestDtoById(requestId, viewer.id));
 	}
 
 	messages(viewer: Viewer, requestId: string, input: MessagePageInput) {
@@ -365,7 +394,7 @@ export class InteractionService {
 		let cursorSql = "";
 		if (input.cursor) {
 			const cursor = decodeCursor(input.cursor);
-			cursorSql = "AND (created_at > ? OR (created_at = ? AND id > ?))";
+			cursorSql = "AND (created_at < ? OR (created_at = ? AND id < ?))";
 			values.push(cursor.timestamp, cursor.timestamp, cursor.id);
 		}
 		values.push(limit + 1);
@@ -375,13 +404,14 @@ export class InteractionService {
 				created_at AS createdAt, read_at AS readAt
 			 FROM messages
 			 WHERE request_id = ? ${cursorSql}
-			 ORDER BY created_at ASC, id ASC
+			 ORDER BY created_at DESC, id DESC
 			 LIMIT ?`,
 			values,
 		);
 		const page = rows.slice(0, limit);
+		const chronologicalPage = page.slice().reverse();
 		return {
-			items: page.map(this.#mapMessage),
+			items: chronologicalPage.map(this.#mapMessage),
 			nextCursor:
 				rows.length > limit
 					? encodeCursor({
@@ -508,6 +538,75 @@ export class InteractionService {
 						? null
 						: aggregate.respondedRequests / totalRequests,
 			},
+		};
+	}
+
+	profileHistory(
+		viewer: Viewer,
+		userId: string,
+		input: { cursor?: string; limit?: number },
+	) {
+		const member = this.#memberById(userId);
+		if (member.neighborhoodId !== viewer.neighborhood.id) {
+			throw new HttpError("FORBIDDEN");
+		}
+
+		const limit = input.limit ?? DEFAULT_PAGE_LIMIT;
+		const values: SQLQueryBindings[] = [userId, userId, userId, userId];
+		const where = [
+			"r.status = 'completed'",
+			"l.status = 'completed'",
+			"(l.owner_id = ? OR r.requester_id = ?)",
+		];
+		if (input.cursor) {
+			const cursor = decodeCursor(input.cursor);
+			where.push("(r.updated_at < ? OR (r.updated_at = ? AND r.id < ?))");
+			values.push(cursor.timestamp, cursor.timestamp, cursor.id);
+		}
+		values.push(limit + 1);
+
+		const rows = getAll<ProfileExchangeHistoryRow>(
+			this.#db,
+			`SELECT
+				r.id AS requestId,
+				l.id AS listingId,
+				l.title AS listingTitle,
+				l.type AS listingType,
+				CASE WHEN l.owner_id = ? THEN 'owner' ELSE 'requester' END AS role,
+				r.updated_at AS completedAt,
+				review.id AS reviewId,
+				review.rating AS reviewRating,
+				review.body AS reviewBody,
+				review.created_at AS reviewCreatedAt,
+				reviewer.id AS reviewerId,
+				reviewer.name AS reviewerName,
+				reviewer.handle AS reviewerHandle,
+				reviewer.avatar_path AS reviewerAvatarPath,
+				reviewer.bio AS reviewerBio
+			 FROM requests r
+			 JOIN listings l ON l.id = r.listing_id
+			 LEFT JOIN reviews review
+				ON review.request_id = r.id
+				AND review.reviewer_id = CASE
+					WHEN l.owner_id = ? THEN r.requester_id
+					ELSE l.owner_id
+				END
+			 LEFT JOIN users reviewer ON reviewer.id = review.reviewer_id
+			 WHERE ${where.join(" AND ")}
+			 ORDER BY r.updated_at DESC, r.id DESC
+			 LIMIT ?`,
+			values,
+		);
+		const page = rows.slice(0, limit);
+		return {
+			items: page.map((row) => this.#mapProfileHistoryItem(row)),
+			nextCursor:
+				rows.length > limit
+					? encodeCursor({
+							timestamp: page.at(-1)?.completedAt ?? 0,
+							id: page.at(-1)?.requestId ?? "",
+						})
+					: null,
 		};
 	}
 
@@ -671,6 +770,21 @@ export class InteractionService {
 		return request;
 	}
 
+	#requestDtoById(id: string, viewerId: string): RequestDtoRow {
+		const request = getOne<RequestDtoRow>(
+			this.#db,
+			`SELECT ${requestDtoProjection}
+			 FROM requests r
+			 JOIN listings l ON l.id = r.listing_id
+			 JOIN users owner ON owner.id = l.owner_id
+			 JOIN users requester ON requester.id = r.requester_id
+			 WHERE r.id = ?`,
+			[viewerId, id],
+		);
+		if (!request) throw new HttpError("NOT_FOUND");
+		return request;
+	}
+
 	#memberById(id: string): MemberRow {
 		const member = getOne<MemberRow>(
 			this.#db,
@@ -713,7 +827,7 @@ export class InteractionService {
 		}
 	}
 
-	#mapRequest(row: RequestRow): RequestParticipant {
+	#mapRequest(row: RequestDtoRow): RequestParticipant {
 		return {
 			id: row.id,
 			listingId: row.listingId,
@@ -738,6 +852,7 @@ export class InteractionService {
 			updatedAt: row.updatedAt,
 			ownerId: row.ownerId,
 			requesterId: row.requesterId,
+			hasViewerReview: Boolean(row.hasViewerReview),
 		};
 	}
 
@@ -760,6 +875,48 @@ export class InteractionService {
 			rating: row.rating,
 			body: row.body,
 			createdAt: row.createdAt,
+		};
+	}
+
+	#mapProfileHistoryItem(
+		row: ProfileExchangeHistoryRow,
+	): ProfileExchangeHistoryItem {
+		const item = {
+			listingId: row.listingId,
+			listingTitle: row.listingTitle,
+			listingType: row.listingType,
+			role: row.role,
+			completedAt: row.completedAt,
+		};
+		if (row.reviewId === null) {
+			return { ...item, review: null };
+		}
+		if (
+			row.reviewRating === null ||
+			row.reviewBody === null ||
+			row.reviewCreatedAt === null ||
+			row.reviewerId === null ||
+			row.reviewerName === null ||
+			row.reviewerHandle === null ||
+			row.reviewerBio === null
+		) {
+			throw new HttpError("INTERNAL_ERROR");
+		}
+		return {
+			...item,
+			review: {
+				id: row.reviewId,
+				rating: row.reviewRating,
+				body: row.reviewBody,
+				createdAt: row.reviewCreatedAt,
+				reviewer: {
+					id: row.reviewerId,
+					name: row.reviewerName,
+					handle: row.reviewerHandle,
+					avatarPath: row.reviewerAvatarPath ?? "",
+					bio: row.reviewerBio,
+				},
+			},
 		};
 	}
 

@@ -106,7 +106,7 @@ SQLite database + seeded demo data
 
 - The server derives the acting user from the session. Clients never submit authoritative owner, author, sender, reviewer, reviewee, or neighborhood-membership identifiers.
 - Every SQL statement uses bound parameters. Foreign keys, check constraints, pair uniqueness, and the accepted-request partial unique index defend invariants below the handler layer.
-- Every non-safe request requires a present, explicitly allowlisted `Origin`, including register, login, demo login, logout, contact, and authenticated mutations. Allowed origins come only from deployment configuration, never `Host` or forwarded host headers.
+- Every non-safe request requires a present `Origin` that exactly matches the request URL's origin or a configured `NEIGHBORLY_PUBLIC_ORIGINS` value, including register, login, demo login, logout, contact, and authenticated mutations. Development adds only the two Vite loopback origins. Production requires non-empty canonical absolute HTTP(S) origins plus `NEIGHBORLY_TRUST_PROXY=1`; those origins recognize proxy-rewritten same-site requests and do not enable CORS or cross-origin browser access.
 - Register, login, demo login, and contact do not require an existing session. Every other non-safe route does.
 - Session tokens contain 32 CSPRNG bytes, are stored only as SHA-256 hashes, expire, rotate after authentication, and are revoked on logout. The cookie is `HttpOnly`, `SameSite=Lax`, `Path=/`, `Secure` in production, and is cleared with identical attributes.
 - Login, registration, demo login, and contact have bounded in-memory rate limits under the supported single-replica topology.
@@ -156,7 +156,7 @@ Shared Zod schemas define every request, response, enum, field bound, status cod
 
 | Route | Input | Success |
 | --- | --- | --- |
-| `GET /api/health` | none | `200` readiness DTO after database integrity, migration, and writeability checks; otherwise `503` |
+| `GET /api/health` | none | `200` bounded readiness DTO after migration/read, indexed expiry maintenance, and writeability checks; use offline `bun run db:check` for full integrity; otherwise `503` |
 | `GET /api/preview` | `limit` capped at 8 | curated listing summary DTOs with no member-private fields |
 | `GET /api/neighborhoods` | optional bounded `q` | neighborhood DTO list |
 | `POST /api/auth/register` | name, email, password, neighborhood id | `201` self user DTO plus hardened session cookie |
@@ -203,11 +203,11 @@ Page size defaults to 12 and is capped at 50. Type-specific schemas require requ
 | Self only | email, saved set, account settings, sessions | current user only |
 | Server only | password/session hashes, contact records, raw rate-limit state | never serialized by client routes |
 
-Expired sessions and 30-day contact records are purged by an idempotent maintenance command. Logs redact cookies, authorization material, passwords, contact bodies, message bodies, and email addresses. Completed exchanges, tombstones, and reviews remain durable.
+Expired sessions are purged during authentication/session issuance; 30-day contact records are purged during contact and bounded readiness maintenance. Logs redact cookies, authorization material, passwords, contact bodies, message bodies, and email addresses. Completed exchanges, tombstones, and reviews remain durable.
 
 ### Supported deployment topology
 
-Production supports exactly one Bun application replica with one local POSIX filesystem volume. The SQLite database, `-wal`, and `-shm` files live together under the required configured data path. Production startup fails closed when allowed origins, secure-cookie mode, or the data path are missing.
+Production supports exactly one Bun application replica with one local POSIX filesystem volume. The SQLite database, `-wal`, and `-shm` files live together under the required configured data path. Production startup fails closed when the data path, non-empty public-origin configuration, or explicit trusted-proxy setting is missing. Bun stays on a private network behind the HTTPS reverse proxy, which overwrites `Host` and forwarded protocol and appends `X-Forwarded-For`; only the rightmost IP-valid forwarded address is trusted.
 
 Each connection enables foreign keys, busy timeout, WAL, and documented durability pragmas. Ordered migrations run under an exclusive startup transaction before readiness. Graceful shutdown checkpoints WAL. Backups use SQLite's consistent backup mechanism, include a restore-and-integrity-check procedure, and monitor disk quota because image blobs share the database. Multiple replicas require replacing SQLite and the in-memory limiter rather than mounting this database on an arbitrary network filesystem.
 

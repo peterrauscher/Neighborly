@@ -1,13 +1,9 @@
 import {
-	CheckCircle,
 	FloppyDisk,
 	IdentificationCard,
 	LockKey,
 	MapPin,
-	ShieldCheck,
 	Sparkle,
-	User as UserIcon,
-	WarningCircle,
 } from "@phosphor-icons/react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -141,8 +137,10 @@ export function AccountPage() {
 		setAnnouncement("");
 
 		if (user?.isDemo) {
-			setProfileSuccess("Demo account profile changes simulated.");
-			setAnnouncement("Demo account profile changes simulated.");
+			const demoMsg =
+				"Profile changes are disabled for the read-only demo account and are not saved.";
+			setProfileError(demoMsg);
+			setAnnouncement(demoMsg);
 			return;
 		}
 
@@ -383,9 +381,8 @@ export function AccountPage() {
 			{/* Demo Account Read-Only Banner */}
 			{user.isDemo && (
 				<InlineAlert variant="info" title="Read-Only Demo Account">
-					You are currently signed in as a demo user. Profile settings can be
-					edited in preview mode, but password changes and permanent database
-					updates are disabled.
+					You are using a read-only demo account. Profile and password changes
+					are disabled and are not saved.
 				</InlineAlert>
 			)}
 
@@ -410,9 +407,7 @@ export function AccountPage() {
 									Demo Account
 								</Badge>
 							) : (
-								<Badge variant="primary" icon={<ShieldCheck size={12} />}>
-									Verified Resident
-								</Badge>
+								<Badge variant="primary">Account</Badge>
 							)}
 							{user.neighborhood && (
 								<Badge variant="default" icon={<MapPin size={12} />}>
@@ -488,7 +483,9 @@ export function AccountPage() {
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 							error={profileFieldErrors.name}
-							disabled={isProfileSubmitting || state.status === "offline"}
+							disabled={
+								user.isDemo || isProfileSubmitting || state.status === "offline"
+							}
 						/>
 
 						<TextField
@@ -510,7 +507,9 @@ export function AccountPage() {
 							value={bio}
 							onChange={(e) => setBio(e.target.value)}
 							error={profileFieldErrors.bio}
-							disabled={isProfileSubmitting || state.status === "offline"}
+							disabled={
+								user.isDemo || isProfileSubmitting || state.status === "offline"
+							}
 							helpText={`${bio.length}/500 characters &bull; Tell local neighbors what tools or skills you can share.`}
 						/>
 
@@ -523,6 +522,7 @@ export function AccountPage() {
 							options={neighborhoodOptions}
 							error={profileFieldErrors.neighborhoodId}
 							disabled={
+								user.isDemo ||
 								isLoadingNeighborhoods ||
 								isProfileSubmitting ||
 								state.status === "offline"
@@ -536,7 +536,11 @@ export function AccountPage() {
 								variant="primary"
 								size="md"
 								isLoading={isProfileSubmitting}
-								disabled={isProfileSubmitting || state.status === "offline"}
+								disabled={
+									user.isDemo ||
+									isProfileSubmitting ||
+									state.status === "offline"
+								}
 								leftIcon={<FloppyDisk size={18} />}
 							>
 								Save Profile Changes

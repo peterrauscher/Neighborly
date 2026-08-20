@@ -11,6 +11,7 @@ import {
 	PreviewSuccessSchema,
 } from "../src/lib/contracts";
 import { type AppHandler, createApp } from "./app";
+import { ImageService } from "./images";
 
 const ORIGIN = "http://neighborly.test";
 const PASSWORD = "CorrectHorseBatteryStaple!";
@@ -151,7 +152,7 @@ const createTestApp = async (): Promise<TestApp> => {
 			`INSERT INTO neighborhoods (
 				id, slug, name, city, state, timezone, description, image_path, created_at, updated_at
 			) VALUES (?, ?, ?, 'Testville', 'TS', 'America/New_York',
-				'Test neighborhood used only for isolated listing route tests.', '/assets/logo.svg', ?, ?)`,
+				'Test neighborhood used only for isolated listing route tests.', '/images/logo-with-text.svg', ?, ?)`,
 		).run(id, slug, name, now.value, now.value);
 	}
 	const passwordHash = await Bun.password.hash(PASSWORD, {
@@ -234,6 +235,96 @@ const validImageFile = async (name = "listing.png") => {
 		.png()
 		.toBuffer();
 	return new File([copyOwnedBytes(image)], name, { type: "image/png" });
+};
+
+type DeferredMultipartRequest = {
+	request: Request;
+	pulled: Promise<void>;
+	release: () => void;
+	readonly bodyWasPulled: boolean;
+	readonly bodyWasCancelled: boolean;
+};
+
+const deferredMultipartRequest = (
+	session: Session,
+	body: Uint8Array,
+): DeferredMultipartRequest => {
+	let resolvePull: (() => void) | undefined;
+	const pulled = new Promise<void>((resolve) => {
+		resolvePull = resolve;
+	});
+	let resolveBody: (() => void) | undefined;
+	const bodyReleased = new Promise<void>((resolve) => {
+		resolveBody = resolve;
+	});
+	let bodyWasPulled = false;
+	let bodyWasCancelled = false;
+	const stream = new ReadableStream<Uint8Array>(
+		{
+			pull(controller) {
+				bodyWasPulled = true;
+				resolvePull?.();
+				return bodyReleased.then(() => {
+					controller.enqueue(body);
+					controller.close();
+				});
+			},
+			cancel() {
+				bodyWasCancelled = true;
+				resolveBody?.();
+			},
+		},
+		{ highWaterMark: 0 },
+	);
+	const headers = new Headers({
+		Origin: ORIGIN,
+		"Content-Type": "multipart/form-data; boundary=neighborly-test-boundary",
+		Cookie: session.cookie,
+		"X-CSRF-Token": session.csrf,
+	});
+	return {
+		request: new Request(`${ORIGIN}/api/listings/list_fixture_001/images`, {
+			method: "POST",
+			headers,
+			body: stream,
+		}),
+		pulled,
+		release: () => {
+			if (!resolveBody)
+				throw new Error("Multipart body release was not initialized.");
+			resolveBody();
+		},
+		get bodyWasPulled() {
+			return bodyWasPulled;
+		},
+		get bodyWasCancelled() {
+			return bodyWasCancelled;
+		},
+	};
+};
+
+const serializedImageMultipart = async (file: File): Promise<Uint8Array> => {
+	const boundary = "neighborly-test-boundary";
+	const encoder = new TextEncoder();
+	const fileBytes = new Uint8Array(await file.arrayBuffer());
+	const chunks = [
+		encoder.encode(
+			`--${boundary}\r\nContent-Disposition: form-data; name="images"; filename="${file.name}"\r\nContent-Type: image/png\r\n\r\n`,
+		),
+		fileBytes,
+		encoder.encode(
+			`\r\n--${boundary}\r\nContent-Disposition: form-data; name="metadata"\r\n\r\n[{"altText":"Deferred image","sortOrder":0}]\r\n--${boundary}--\r\n`,
+		),
+	];
+	const bytes = new Uint8Array(
+		chunks.reduce((length, chunk) => length + chunk.byteLength, 0),
+	);
+	let offset = 0;
+	for (const chunk of chunks) {
+		bytes.set(chunk, offset);
+		offset += chunk.byteLength;
+	}
+	return bytes;
 };
 
 describe("listing boundary", () => {
@@ -361,6 +452,228 @@ describe("listing boundary", () => {
 					isRequestedByViewer: false,
 				},
 			]);
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("projects only pending and accepted viewer requests while preserving the member listing DTO", async () => {
+		const app = await createTestApp();
+		try {
+			const requestStates = [
+				{
+					id: "list_request_pending",
+					requestId: "req_projection_pending",
+					status: "pending",
+					isRequestedByViewer: true,
+				},
+				{
+					id: "list_request_accepted",
+					requestId: "req_projection_accepted",
+					status: "accepted",
+					isRequestedByViewer: true,
+				},
+				{
+					id: "list_request_declined",
+					requestId: "req_projection_declined",
+					status: "declined",
+					isRequestedByViewer: false,
+				},
+				{
+					id: "list_request_cancelled",
+					requestId: "req_projection_cancelled",
+					status: "cancelled",
+					isRequestedByViewer: false,
+				},
+			] as const;
+			for (const [index, requestState] of requestStates.entries()) {
+				insertListing(app, {
+					id: requestState.id,
+					title: `Request projection ${requestState.status}`,
+					createdAt: app.now.value - index,
+				});
+				app.db
+					.prepare(
+						`INSERT INTO requests (
+							id, listing_id, requester_id, opening_message, status,
+							cancelled_by_user_id, cancellation_reason, created_at, updated_at
+						) VALUES (?, ?, ?, 'A request used only to test listing state projection.', ?, ?, ?, ?, ?)`,
+					)
+					.run(
+						requestState.requestId,
+						requestState.id,
+						ids.member,
+						requestState.status,
+						requestState.status === "cancelled" ? ids.member : null,
+						requestState.status === "cancelled" ? "No longer needed." : null,
+						app.now.value,
+						app.now.value,
+					);
+			}
+
+			const member = await login(app, "member@neighborly.test");
+			const response = await app.fetch(
+				request("/api/feed?limit=8", "GET", undefined, member),
+			);
+			expect(response.status).toBe(200);
+			const feed = FeedResponseSchema.parse(await response.json());
+			expect(
+				feed.data.items
+					.filter((item) => item.id.startsWith("list_request_"))
+					.map(({ id, isRequestedByViewer }) => ({ id, isRequestedByViewer }))
+					.sort((left, right) => left.id.localeCompare(right.id)),
+			).toEqual(
+				requestStates
+					.map(({ id, isRequestedByViewer }) => ({ id, isRequestedByViewer }))
+					.sort((left, right) => left.id.localeCompare(right.id)),
+			);
+
+			const pending = feed.data.items.find(
+				(item) => item.id === "list_request_pending",
+			);
+			expect(Object.keys(pending ?? {}).sort()).toEqual([
+				"availableFrom",
+				"availableThrough",
+				"category",
+				"commentsCount",
+				"condition",
+				"description",
+				"hasViewerReaction",
+				"id",
+				"images",
+				"isRequestedByViewer",
+				"isSavedByViewer",
+				"neighborhood",
+				"owner",
+				"reactionsCount",
+				"requestsCount",
+				"savesCount",
+				"status",
+				"title",
+				"type",
+				"wantedItem",
+			]);
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("filters the neighborhood feed by owner with composed filters and stable cursors", async () => {
+		const app = await createTestApp();
+		try {
+			insertListing(app, {
+				id: "list_owner_001",
+				ownerId: ids.owner,
+				title: "Owner newest tool",
+				createdAt: 30,
+			});
+			insertListing(app, {
+				id: "list_owner_002",
+				ownerId: ids.owner,
+				title: "Owner tied tool",
+				createdAt: 20,
+			});
+			insertListing(app, {
+				id: "list_owner_003",
+				ownerId: ids.owner,
+				category: "garden",
+				title: "Owner tied garden tool",
+				createdAt: 20,
+			});
+			insertListing(app, {
+				id: "list_member_001",
+				ownerId: ids.member,
+				category: "garden",
+				title: "Member garden tool",
+				createdAt: 40,
+			});
+			insertListing(app, {
+				id: "list_outside_001",
+				ownerId: ids.outsider,
+				neighborhoodId: ids.secondNeighborhood,
+				title: "Outside neighborhood tool",
+				createdAt: 50,
+			});
+
+			const member = await login(app, "member@neighborly.test");
+			const first = await app.fetch(
+				request(
+					`/api/feed?ownerId=${encodeURIComponent(ids.owner)}&limit=2`,
+					"GET",
+					undefined,
+					member,
+				),
+			);
+			expect(first.status).toBe(200);
+			const firstBody = FeedResponseSchema.parse(await first.json());
+			expect(firstBody.data.items.map((item) => item.id)).toEqual([
+				"list_owner_001",
+				"list_owner_003",
+			]);
+			expect(
+				firstBody.data.items.every((item) => item.owner.id === ids.owner),
+			).toBe(true);
+			expect(firstBody.data.nextCursor).toEqual(expect.any(String));
+
+			const second = await app.fetch(
+				request(
+					`/api/feed?ownerId=${encodeURIComponent(ids.owner)}&limit=2&cursor=${encodeURIComponent(firstBody.data.nextCursor ?? "")}`,
+					"GET",
+					undefined,
+					member,
+				),
+			);
+			expect(second.status).toBe(200);
+			const secondBody = FeedResponseSchema.parse(await second.json());
+			expect(secondBody.data.items.map((item) => item.id)).toEqual([
+				"list_owner_002",
+			]);
+			expect(secondBody.data.nextCursor).toBeNull();
+
+			const composed = await app.fetch(
+				request(
+					`/api/feed?ownerId=${encodeURIComponent(ids.owner)}&category=garden`,
+					"GET",
+					undefined,
+					member,
+				),
+			);
+			expect(composed.status).toBe(200);
+			expect(
+				FeedResponseSchema.parse(await composed.json()).data.items.map(
+					(item) => item.id,
+				),
+			).toEqual(["list_owner_003"]);
+
+			const empty = await app.fetch(
+				request(
+					`/api/feed?ownerId=${encodeURIComponent(ids.demo)}`,
+					"GET",
+					undefined,
+					member,
+				),
+			);
+			expect(empty.status).toBe(200);
+			expect(FeedResponseSchema.parse(await empty.json()).data).toEqual({
+				items: [],
+				nextCursor: null,
+			});
+
+			const crossNeighborhood = await app.fetch(
+				request(
+					`/api/feed?ownerId=${encodeURIComponent(ids.outsider)}`,
+					"GET",
+					undefined,
+					member,
+				),
+			);
+			expect(crossNeighborhood.status).toBe(200);
+			expect(
+				FeedResponseSchema.parse(await crossNeighborhood.json()).data,
+			).toEqual({
+				items: [],
+				nextCursor: null,
+			});
 		} finally {
 			app.db.close();
 		}
@@ -602,18 +915,19 @@ describe("listing boundary", () => {
 			expect(unauthenticated.status).toBe(401);
 			expect(unauthenticatedRequest.bodyUsed).toBe(false);
 
-			const nonOwner = await app.fetch(
-				request(
-					"/api/listings/list_fixture_001/images",
-					"POST",
-					await imageUpload(
-						[new File(["not an image"], "bad.txt", { type: "text/plain" })],
-						[{ altText: "Bad image", sortOrder: 0 }],
-					),
-					member,
+			const nonOwnerRequest = request(
+				"/api/listings/list_fixture_001/images",
+				"POST",
+				await imageUpload(
+					[new File(["not an image"], "bad.txt", { type: "text/plain" })],
+					[{ altText: "Bad image", sortOrder: 0 }],
 				),
+				member,
 			);
+			expect(nonOwnerRequest.bodyUsed).toBe(false);
+			const nonOwner = await app.fetch(nonOwnerRequest);
 			expect(nonOwner.status).toBe(403);
+			expect(nonOwnerRequest.bodyUsed).toBe(false);
 			expect(
 				app.db.query("SELECT count(*) AS count FROM listing_images").get(),
 			).toEqual({
@@ -789,6 +1103,128 @@ describe("listing boundary", () => {
 			expect(await full.json()).toMatchObject({
 				error: { fields: { images: [expect.stringContaining("at most")] } },
 			});
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("admits only two multipart bodies and releases capacity after errors and success", async () => {
+		const app = await createTestApp();
+		const responses: Promise<Response>[] = [];
+		let first: DeferredMultipartRequest | undefined;
+		let second: DeferredMultipartRequest | undefined;
+		let replacement: DeferredMultipartRequest | undefined;
+		let afterSuccess: DeferredMultipartRequest | undefined;
+		try {
+			insertListing(app);
+			const owner = await login(app, "owner@neighborly.test");
+			const validBody = await serializedImageMultipart(
+				await validImageFile("deferred.png"),
+			);
+			const malformedBody = new TextEncoder().encode("not multipart");
+
+			first = deferredMultipartRequest(owner, malformedBody);
+			second = deferredMultipartRequest(owner, malformedBody);
+			const firstResponse = app.fetch(first.request);
+			const secondResponse = app.fetch(second.request);
+			responses.push(firstResponse, secondResponse);
+			await Promise.all([first.pulled, second.pulled]);
+
+			const rejected = deferredMultipartRequest(owner, validBody);
+			const rejectedResponse = await app.fetch(rejected.request);
+			expect(rejectedResponse.status).toBe(503);
+			expect((await rejectedResponse.json()).error.code).toBe(
+				"SERVICE_UNAVAILABLE",
+			);
+			expect(rejected.bodyWasPulled).toBe(false);
+			expect(rejected.bodyWasCancelled).toBe(true);
+
+			first.release();
+			expect((await firstResponse).status).toBe(400);
+
+			replacement = deferredMultipartRequest(owner, validBody);
+			const replacementResponse = app.fetch(replacement.request);
+			responses.push(replacementResponse);
+			await replacement.pulled;
+			replacement.release();
+			expect((await replacementResponse).status).toBe(201);
+
+			afterSuccess = deferredMultipartRequest(owner, malformedBody);
+			const afterSuccessResponse = app.fetch(afterSuccess.request);
+			responses.push(afterSuccessResponse);
+			await afterSuccess.pulled;
+			afterSuccess.release();
+			expect((await afterSuccessResponse).status).toBe(400);
+
+			second.release();
+			expect((await secondResponse).status).toBe(400);
+		} finally {
+			first?.release();
+			second?.release();
+			replacement?.release();
+			afterSuccess?.release();
+			await Promise.allSettled(responses);
+			app.db.close();
+		}
+	});
+
+	test("rejects an over-capacity image batch before decoding either file", async () => {
+		const app = await createTestApp();
+		try {
+			const listing = insertListing(app);
+			const images = new ImageService({
+				db: app.db,
+				now: () => app.now.value,
+			});
+			const viewer = {
+				id: ids.owner,
+				neighborhood: { id: ids.firstNeighborhood },
+			} as Parameters<ImageService["add"]>[0];
+			await images.add(viewer, listing.id, [
+				{
+					file: await validImageFile("existing-one.png"),
+					altText: "Existing image one",
+					sortOrder: 0,
+				},
+				{
+					file: await validImageFile("existing-two.png"),
+					altText: "Existing image two",
+					sortOrder: 1,
+				},
+			]);
+
+			let normalizationAttempted = false;
+			const file = {
+				size: 1,
+				arrayBuffer: async () => {
+					normalizationAttempted = true;
+					throw new Error("Image decoding must not start.");
+				},
+			} as unknown as File;
+			let capacityError: unknown;
+			try {
+				await images.add(viewer, listing.id, [
+					{ file, altText: "Over capacity one", sortOrder: 0 },
+					{ file, altText: "Over capacity two", sortOrder: 1 },
+				]);
+			} catch (error) {
+				capacityError = error;
+			}
+
+			expect(capacityError).toMatchObject({
+				code: "VALIDATION_ERROR",
+				fields: {
+					images: [expect.stringContaining("at most")],
+				},
+			});
+			expect(normalizationAttempted).toBe(false);
+			expect(
+				app.db
+					.query(
+						"SELECT count(*) AS count FROM listing_images WHERE listing_id = ?",
+					)
+					.get(listing.id),
+			).toEqual({ count: MAX_LISTING_IMAGE_COUNT - 1 });
 		} finally {
 			app.db.close();
 		}

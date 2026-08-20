@@ -5,6 +5,7 @@ export const MAX_PAGE_LIMIT = 50;
 export const PREVIEW_PAGE_LIMIT = 8;
 export const MAX_SEARCH_QUERY_LENGTH = 80;
 export const MAX_CONTACT_MESSAGE_LENGTH = 2000;
+export const MAX_CONTACT_HONEYPOT_LENGTH = 256;
 export const MAX_COMMENT_LENGTH = 1200;
 export const MAX_MESSAGE_LENGTH = 1500;
 export const MAX_REVIEW_LENGTH = 800;
@@ -182,6 +183,19 @@ export const DateRangeSchema = z
 	.strict()
 	.superRefine(validateAvailabilityDateRange);
 
+export const FeedQuerySchema = z
+	.object({
+		ownerId: IdSchema.optional(),
+		type: ListingTypeSchema.optional(),
+		category: z.string().trim().min(2).max(60).optional(),
+		q: z.string().trim().max(MAX_SEARCH_QUERY_LENGTH).optional(),
+		saved: SavedOnlyQuerySchema.shape.saved,
+		...DateRangeFields,
+		...CursorQuerySchema.shape,
+	})
+	.strict()
+	.superRefine(validateAvailabilityDateRange);
+
 export const HttpMethodSchema = z.enum([
 	"GET",
 	"POST",
@@ -266,7 +280,19 @@ export const PasswordSchema = z.string().superRefine((value, context) => {
 	}
 });
 
-export const NeighborhoodImagePathSchema = z.string().trim().min(1).max(256);
+const SAFE_IMAGE_PATH_SEGMENT = "[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*";
+const SAME_ORIGIN_IMAGE_PATH_PATTERN = new RegExp(
+	`^/images(?:/${SAFE_IMAGE_PATH_SEGMENT})*/${SAFE_IMAGE_PATH_SEGMENT}\\.(?:png|jpe?g|webp|svg)$`,
+);
+
+export const NeighborhoodImagePathSchema = z
+	.string()
+	.min(1)
+	.max(256)
+	.regex(
+		SAME_ORIGIN_IMAGE_PATH_PATTERN,
+		"Use a safe same-origin /images/ asset path",
+	);
 
 export const NeighborhoodDtoSchema = z.object({
 	id: IdSchema,
@@ -709,6 +735,23 @@ export const ReviewDtoSchema = z.object({
 	createdAt: TimestampSchema,
 });
 
+export const ProfileExchangeHistoryItemSchema = z.object({
+	listingId: IdSchema,
+	listingTitle: z.string().trim().min(2).max(120),
+	listingType: ListingTypeSchema,
+	role: z.enum(["owner", "requester"]),
+	completedAt: TimestampSchema,
+	review: z
+		.object({
+			id: IdSchema,
+			rating: z.number().int().min(1).max(5),
+			body: z.string().trim().max(MAX_REVIEW_LENGTH),
+			createdAt: TimestampSchema,
+			reviewer: PublicUserSummarySchema,
+		})
+		.nullable(),
+});
+
 export const RequestParticipantSchema = z.object({
 	id: IdSchema,
 	listingId: IdSchema,
@@ -724,6 +767,7 @@ export const RequestParticipantSchema = z.object({
 	updatedAt: TimestampSchema,
 	ownerId: IdSchema,
 	requesterId: IdSchema,
+	hasViewerReview: z.boolean(),
 });
 
 export const UserMePatchSchema = z
@@ -779,7 +823,7 @@ export const ContactInputSchema = z
 		name: NameSchema(100),
 		email: EmailSchema,
 		message: z.string().trim().min(10).max(MAX_CONTACT_MESSAGE_LENGTH),
-		honeypot: z.string().max(0).default(""),
+		honeypot: z.string().max(MAX_CONTACT_HONEYPOT_LENGTH).default(""),
 	})
 	.strict();
 
@@ -820,6 +864,9 @@ export const ListingByIdResponseSchema = EnvelopeSchema(ListingDetailSchema);
 export const MessageListResponseSchema = CursorEnvelopeSchema(MessageDtoSchema);
 export const RequestsResponseSchema = CursorEnvelopeSchema(
 	RequestParticipantSchema,
+);
+export const ProfileExchangeHistoryResponseSchema = CursorEnvelopeSchema(
+	ProfileExchangeHistoryItemSchema,
 );
 
 export const SelfRouteResultSchema = EnvelopeSchema(SelfUserSchema);
@@ -1006,17 +1053,7 @@ export const API_ROUTES = {
 		method: "GET",
 		path: "/api/feed",
 		params: NoInput,
-		query: z
-			.object({
-				type: ListingTypeSchema.optional(),
-				category: z.string().trim().min(2).max(60).optional(),
-				q: z.string().trim().max(MAX_SEARCH_QUERY_LENGTH).optional(),
-				saved: SavedOnlyQuerySchema.shape.saved,
-				...DateRangeFields,
-				...CursorQuerySchema.shape,
-			})
-			.strict()
-			.superRefine(validateAvailabilityDateRange),
+		query: FeedQuerySchema,
 		body: NoInput,
 		response: FeedResponseSchema,
 		successStatus: 200,
@@ -1301,6 +1338,17 @@ export const API_ROUTES = {
 		successStatus: 200,
 		errors: ["UNAUTHORIZED", "NOT_FOUND", "FORBIDDEN", "INTERNAL_ERROR"],
 	}),
+	userHistory: route({
+		method: "GET",
+		path: "/api/users/:id/history",
+		params: z.object({ id: IdSchema }),
+		query: CursorQuerySchema,
+		body: NoInput,
+		response: ProfileExchangeHistoryResponseSchema,
+		successStatus: 200,
+		errors: ["UNAUTHORIZED", "NOT_FOUND", "FORBIDDEN", "INTERNAL_ERROR"],
+	}),
+
 	neighborsList: route({
 		method: "GET",
 		path: "/api/neighbors",
@@ -1385,3 +1433,6 @@ export type MemberProfile = z.infer<typeof MemberProfileSchema>;
 export type RequestParticipant = z.infer<typeof RequestParticipantSchema>;
 export type MessageDto = z.infer<typeof MessageDtoSchema>;
 export type ReviewDto = z.infer<typeof ReviewDtoSchema>;
+export type ProfileExchangeHistoryItem = z.infer<
+	typeof ProfileExchangeHistoryItemSchema
+>;

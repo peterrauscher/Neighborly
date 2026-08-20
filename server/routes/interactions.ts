@@ -74,6 +74,13 @@ export function registerInteractionRoutes(
 		return { data: interactions.memberProfile(session.user, id) };
 	});
 
+	router.add(API_ROUTES.userHistory, (context) => {
+		const session = auth.requireSession(context.request);
+		const { id } = API_ROUTES.userHistory.params.parse(context.params);
+		const input = API_ROUTES.userHistory.query.parse(context.query);
+		return { data: interactions.profileHistory(session.user, id, input) };
+	});
+
 	router.add(API_ROUTES.neighborsList, (context) => {
 		const session = auth.requireSession(context.request);
 		const input = API_ROUTES.neighborsList.query.parse(context.query);

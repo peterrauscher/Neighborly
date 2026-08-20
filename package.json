@@ -4,62 +4,28 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@apollo/client": "^3.7.16",
     "@fontsource/plus-jakarta-sans": "^5.0.18",
     "@phosphor-icons/react": "^2.1.1",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@uidotdev/usehooks": "^2.0.1",
-    "axios": "^1.4.0",
-    "bulma": "^0.9.4",
-    "bulmaswatch": "^0.8.1",
-    "firebase": "^10.0.0",
-    "graphql": "^16.7.1",
-    "javascript-time-ago": "^2.5.9",
-    "js-cookie": "^3.0.5",
-    "lightgallery": "^2.7.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-google-places-autocomplete": "^4.0.1",
-    "react-image-file-resizer": "^0.4.8",
-    "react-image-gallery": "^1.2.12",
     "react-router-dom": "^6.14.0",
-    "react-time-ago": "^7.2.1",
-    "realm-web": "^2.0.0",
     "sharp": "^0.33.5",
-    "web-vitals": "^2.1.4",
     "zod": "^3.25.0"
   },
   "scripts": {
-    "dev": "bun run dev:client",
-    "dev:client": "vite",
-    "dev:server": "vite --port 3001 --host 127.0.0.1 --strictPort",
+    "dev": "concurrently --kill-others-on-fail \"bun run dev:server\" \"bun run dev:client\"",
+    "dev:server": "bun --watch server/app.ts",
+    "dev:client": "vite --port 5173 --strictPort",
     "build": "vite build",
-    "start": "vite preview",
-    "check": "tsc -p tsconfig.json && biome check src/lib src/main.tsx server vite.config.ts",
-    "lint": "biome lint src/lib src/main.tsx server vite.config.ts",
-    "format": "biome format --write src/lib src/main.tsx server vite.config.ts",
-    "format:check": "biome format src/lib src/main.tsx server vite.config.ts",
-    "test": "bun test"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "start": "bun server/app.ts",
+    "check": "tsc -p tsconfig.json && biome check src server vite.config.ts",
+    "lint": "biome lint src server vite.config.ts",
+    "format": "biome format --write src server vite.config.ts",
+    "format:check": "biome format src server vite.config.ts",
+    "test": "bun test",
+    "db:check": "bun server/database-cli.ts check",
+    "db:backup": "bun server/database-cli.ts backup",
+    "db:restore": "bun server/database-cli.ts restore"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
@@ -68,7 +34,6 @@
     "@types/react-dom": "^18.3.2",
     "@vitejs/plugin-react": "^4.3.3",
     "concurrently": "^8.0.1",
-    "sass": "^1.62.1",
     "typescript": "^5.7.2",
     "vite": "^5.4.19"
   }

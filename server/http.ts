@@ -8,6 +8,23 @@ import type {
 
 export const MAX_JSON_BODY_BYTES = 64 * 1024;
 const MAX_MULTIPART_PARTS = 4;
+const MAX_CONCURRENT_MULTIPART_REQUESTS = 2;
+let activeMultipartRequests = 0;
+
+const acquireMultipartAdmission = (request: Request) => {
+	if (activeMultipartRequests >= MAX_CONCURRENT_MULTIPART_REQUESTS) {
+		void request.body?.cancel().catch(() => undefined);
+		throw new HttpError("SERVICE_UNAVAILABLE");
+	}
+
+	activeMultipartRequests += 1;
+	let released = false;
+	return () => {
+		if (released) return;
+		released = true;
+		activeMultipartRequests -= 1;
+	};
+};
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -496,6 +513,7 @@ export class FetchRouter {
 		clientAddress: string | null = null,
 	): Promise<Response> => {
 		const requestId = crypto.randomUUID();
+		let releaseMultipartAdmission: (() => void) | undefined;
 
 		try {
 			await this.#beforeHandle?.();
@@ -511,7 +529,10 @@ export class FetchRouter {
 
 			if (!SAFE_METHODS.has(request.method)) {
 				const origin = request.headers.get("origin");
-				if (!origin || !this.#allowedOrigins.has(origin)) {
+				if (
+					!origin ||
+					(origin !== url.origin && !this.#allowedOrigins.has(origin))
+				) {
 					throw new HttpError(
 						"FORBIDDEN",
 						"The request origin is not allowed.",
@@ -547,11 +568,15 @@ export class FetchRouter {
 							requestId,
 						})
 					: undefined;
-			const requestBody = SAFE_METHODS.has(request.method)
-				? {}
-				: route.contract.requestEncoding === "multipart"
-					? await readBoundedMultipart(request)
-					: await readBoundedJson(request);
+			let requestBody: unknown;
+			if (SAFE_METHODS.has(request.method)) {
+				requestBody = {};
+			} else if (route.contract.requestEncoding === "multipart") {
+				releaseMultipartAdmission = acquireMultipartAdmission(request);
+				requestBody = await readBoundedMultipart(request);
+			} else {
+				requestBody = await readBoundedJson(request);
+			}
 			const parsedBody = parseWithSchema(route.contract.body, requestBody);
 
 			const result = await route.handler({
@@ -598,6 +623,8 @@ export class FetchRouter {
 			});
 		} catch (error) {
 			return errorResponse(toHttpError(error), requestId);
+		} finally {
+			releaseMultipartAdmission?.();
 		}
 	};
 }

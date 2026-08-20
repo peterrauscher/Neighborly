@@ -1,0 +1,137 @@
+.uploader {
+	border-top: 1px solid var(--color-border-subtle);
+	padding-top: var(--space-6);
+}
+
+.header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--space-4);
+}
+
+.heading {
+	margin: 0;
+	color: var(--color-ink-primary);
+	font-size: var(--text-lg);
+	font-weight: var(--font-weight-semibold);
+	letter-spacing: -0.01em;
+}
+
+.help,
+.capacity,
+.altPreview,
+.uploading {
+	margin: var(--space-1) 0 0;
+	color: var(--color-ink-muted);
+	font-size: var(--text-sm);
+	line-height: var(--leading-normal);
+}
+
+.capacity {
+	margin-top: var(--space-3);
+}
+
+.fileInput,
+.liveRegion {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+.error {
+	margin: var(--space-3) 0 0;
+	border-left: 3px solid var(--color-error);
+	padding: var(--space-2) var(--space-3);
+	color: var(--color-error);
+	background: var(--color-error-bg);
+	font-size: var(--text-sm);
+	line-height: var(--leading-normal);
+}
+
+.imageList {
+	display: grid;
+	gap: var(--space-3);
+	margin: var(--space-4) 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.imageRow {
+	display: grid;
+	grid-template-columns: 88px minmax(0, 1fr) auto;
+	gap: var(--space-3);
+	align-items: start;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: var(--radius-md);
+	padding: var(--space-3);
+	background: var(--color-bg-surface);
+}
+
+.preview,
+.previewFallback {
+	width: 88px;
+	height: 88px;
+	border-radius: var(--radius-sm);
+	background: var(--color-bg-subtle);
+	object-fit: cover;
+}
+
+.previewFallback {
+	display: grid;
+	place-items: center;
+	color: var(--color-ink-muted);
+}
+
+.imageDetails {
+	min-width: 0;
+}
+
+.imageName {
+	margin: 0 0 var(--space-2);
+	color: var(--color-ink-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-weight-semibold);
+	line-height: var(--leading-normal);
+	word-break: break-word;
+}
+
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: var(--space-1);
+	max-width: 12rem;
+}
+
+.uploading {
+	display: block;
+	color: var(--color-forest);
+	font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 560px) {
+	.header {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.imageRow {
+		grid-template-columns: 72px minmax(0, 1fr);
+	}
+
+	.preview,
+	.previewFallback {
+		width: 72px;
+		height: 72px;
+	}
+
+	.actions {
+		grid-column: 1 / -1;
+		justify-content: flex-start;
+		max-width: none;
+	}
+}

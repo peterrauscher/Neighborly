@@ -6,6 +6,7 @@ import {
 	clearCsrfToken,
 	safeRedirectTarget,
 	setCsrfToken,
+	subscribeToAuthInvalidation,
 } from "./api";
 
 afterEach(clearCsrfToken);
@@ -184,6 +185,122 @@ describe("apiRequest", () => {
 				},
 			}),
 		).rejects.toBe(aborted);
+	});
+
+	test("invalidates browser auth on protected 401s and clears the CSRF proof", async () => {
+		let invalidations = 0;
+		const unsubscribe = subscribeToAuthInvalidation(() => {
+			invalidations += 1;
+		});
+
+		try {
+			setCsrfToken("csrf-proof");
+			await expect(
+				apiRequest("feed", {
+					fetch: async () =>
+						Response.json(
+							{
+								error: {
+									code: "UNAUTHORIZED",
+									message: "Your session has expired.",
+								},
+							},
+							{ status: 401 },
+						),
+				}),
+			).rejects.toMatchObject({ status: 401, code: "UNAUTHORIZED" });
+			expect(invalidations).toBe(1);
+
+			let headers: Headers | undefined;
+			await apiRequest("logout", {
+				fetch: async (_input, init) => {
+					headers = new Headers(init?.headers);
+					return new Response(null, { status: 204 });
+				},
+			});
+			expect(headers?.get("x-csrf-token")).toBeNull();
+
+			unsubscribe();
+			await expect(
+				apiRequest("feed", {
+					fetch: async () =>
+						Response.json(
+							{
+								error: {
+									code: "UNAUTHORIZED",
+									message: "Your session has expired.",
+								},
+							},
+							{ status: 401 },
+						),
+				}),
+			).rejects.toMatchObject({ status: 401, code: "UNAUTHORIZED" });
+			expect(invalidations).toBe(1);
+		} finally {
+			unsubscribe();
+		}
+	});
+
+	test("does not invalidate browser auth for failed login, registration, or session probes", async () => {
+		let invalidations = 0;
+		const unsubscribe = subscribeToAuthInvalidation(() => {
+			invalidations += 1;
+		});
+
+		try {
+			await expect(
+				apiRequest("login", {
+					body: { email: "alex@example.test", password: "valid-pass" },
+					fetch: async () =>
+						Response.json(
+							{
+								error: {
+									code: "UNAUTHORIZED",
+									message: "Invalid email or password.",
+								},
+							},
+							{ status: 401 },
+						),
+				}),
+			).rejects.toMatchObject({ status: 401, code: "UNAUTHORIZED" });
+			await expect(
+				apiRequest("register", {
+					body: {
+						name: "Alex Neighbor",
+						email: "alex@example.test",
+						password: "valid-pass",
+						neighborhoodId: "neighborhood_1234",
+					},
+					fetch: async () =>
+						Response.json(
+							{
+								error: {
+									code: "UNAUTHORIZED",
+									message: "Registration is unavailable.",
+								},
+							},
+							{ status: 401 },
+						),
+				}),
+			).rejects.toMatchObject({ status: 401, code: "UNAUTHORIZED" });
+			await expect(
+				apiRequest("session", {
+					fetch: async () =>
+						Response.json(
+							{
+								error: {
+									code: "UNAUTHORIZED",
+									message: "Your session has expired.",
+								},
+							},
+							{ status: 401 },
+						),
+				}),
+			).rejects.toMatchObject({ status: 401, code: "UNAUTHORIZED" });
+			expect(invalidations).toBe(0);
+		} finally {
+			unsubscribe();
+		}
 	});
 });
 

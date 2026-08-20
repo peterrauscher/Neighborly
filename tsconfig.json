@@ -4,16 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "baseUrl": ".",
-    "paths": {
-      "components/*": ["./src/components/*"],
-      "contexts/*": ["./src/contexts/*"],
-      "pages/*": ["./src/pages/*"],
-      "realm/*": ["./src/realm/*"]
-    },
     "jsx": "react-jsx",
-    "allowJs": true,
-    "checkJs": false,
     "strict": true,
     "noEmit": true,
     "isolatedModules": true,
@@ -23,6 +14,6 @@
     "types": ["vite/client", "bun"],
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "server/**/*.ts", "vite.config.ts", "index.html"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "server/**/*.ts", "vite.config.ts"],
   "exclude": ["node_modules", "dist", "public", "build"]
 }

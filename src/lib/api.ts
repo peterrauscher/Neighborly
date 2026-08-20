@@ -115,6 +115,55 @@ export const clearCsrfToken = () => {
 	csrfToken = undefined;
 };
 
+const AUTH_INVALIDATION_EVENT = "neighborly:auth-invalidated";
+const authProbeRoutes: Partial<Record<RouteKey, true>> = {
+	register: true,
+	login: true,
+	demoAuth: true,
+	session: true,
+};
+const authInvalidationTarget =
+	typeof globalThis.addEventListener === "function" &&
+	typeof globalThis.removeEventListener === "function" &&
+	typeof globalThis.dispatchEvent === "function"
+		? globalThis
+		: undefined;
+
+export type AuthInvalidationListener = () => void;
+
+/**
+ * Subscribes a mounted browser auth boundary to protected-request invalidation.
+ * The browser event avoids a module-level listener registry between mounts/tests.
+ */
+export const subscribeToAuthInvalidation = (
+	listener: AuthInvalidationListener,
+) => {
+	if (!authInvalidationTarget) return () => {};
+
+	const handleInvalidation = () => listener();
+	authInvalidationTarget.addEventListener(
+		AUTH_INVALIDATION_EVENT,
+		handleInvalidation,
+	);
+	return () =>
+		authInvalidationTarget.removeEventListener(
+			AUTH_INVALIDATION_EVENT,
+			handleInvalidation,
+		);
+};
+
+const hasProtectedUnauthorizedResponse = (key: RouteKey) => {
+	if (authProbeRoutes[key]) return false;
+	return (API_ROUTES[key].errors as readonly CanonicalErrorCode[]).includes(
+		"UNAUTHORIZED",
+	);
+};
+
+const invalidateBrowserAuthentication = () => {
+	clearCsrfToken();
+	authInvalidationTarget?.dispatchEvent(new Event(AUTH_INVALIDATION_EVENT));
+};
+
 const SAFE_REDIRECT_BASE = "https://neighborly.invalid";
 
 const hasUnsafeRedirectCharacter = (value: string) => {
@@ -371,7 +420,11 @@ export async function apiRequest<Key extends RouteKey>(
 
 	captureCsrfToken(response);
 	if (!response.ok) {
-		const json = await parseJson(response);
+		const json = await parseJson(response).finally(() => {
+			if (response.status === 401 && hasProtectedUnauthorizedResponse(key)) {
+				invalidateBrowserAuthentication();
+			}
+		});
 		const parsed = CanonicalErrorEnvelopeSchema.safeParse(json);
 		if (!parsed.success) {
 			throw invalidResponse(

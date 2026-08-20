@@ -85,6 +85,7 @@ type CommentDto = {
 };
 
 type FeedInput = {
+	ownerId?: string;
 	type?: ListingType;
 	category?: string;
 	q?: string;
@@ -201,7 +202,7 @@ const listingProjection = `
 	(SELECT count(*) FROM requests requests WHERE requests.listing_id = l.id) AS requestsCount,
 	EXISTS(SELECT 1 FROM listing_saves viewer_saves WHERE viewer_saves.listing_id = l.id AND viewer_saves.user_id = ?) AS isSavedByViewer,
 	EXISTS(SELECT 1 FROM listing_reactions viewer_reactions WHERE viewer_reactions.listing_id = l.id AND viewer_reactions.user_id = ?) AS hasViewerReaction,
-	EXISTS(SELECT 1 FROM requests viewer_requests WHERE viewer_requests.listing_id = l.id AND viewer_requests.requester_id = ?) AS isRequestedByViewer
+	EXISTS(SELECT 1 FROM requests viewer_requests WHERE viewer_requests.listing_id = l.id AND viewer_requests.requester_id = ? AND viewer_requests.status IN ('pending', 'accepted')) AS isRequestedByViewer
 `;
 
 export type ListingServiceOptions = {
@@ -243,6 +244,10 @@ export class ListingService {
 			"l.deleted_at IS NULL",
 		];
 		values.push(viewer.neighborhood.id);
+		if (input.ownerId) {
+			where.push("l.owner_id = ?");
+			values.push(input.ownerId);
+		}
 
 		if (input.type) {
 			where.push("l.type = ?");

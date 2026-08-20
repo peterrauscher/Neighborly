@@ -177,7 +177,8 @@ export class ImageService {
 			sortOrders.add(upload.sortOrder);
 		}
 
-		this.preflight(viewer, listingId);
+		const listing = this.#listingForMutation(viewer, listingId);
+		this.#assertImageCapacity(listing.id, uploads.length);
 		const releaseNormalization = this.#acquireNormalization(viewer.id);
 		try {
 			const normalized: NormalizedImage[] = [];
@@ -363,12 +364,16 @@ export class ImageService {
 				throw new HttpError("FORBIDDEN");
 			}
 		}
-		if (row.mimeType !== "image/webp") throw new HttpError("INTERNAL_ERROR");
-		return new Response(copyOwnedBytes(row.imageData), {
+		const detectedMime = imageMimeFromMagic(row.imageData);
+		if (!detectedMime || row.mimeType !== detectedMime) {
+			throw new HttpError("INTERNAL_ERROR");
+		}
+		const imageBytes = copyOwnedBytes(row.imageData);
+		return new Response(imageBytes, {
 			status: 200,
 			headers: {
-				"Content-Type": row.mimeType,
-				"Content-Length": String(row.imageData.byteLength),
+				"Content-Type": detectedMime,
+				"Content-Length": String(imageBytes.byteLength),
 				"Cache-Control": "private, no-store",
 			},
 		});

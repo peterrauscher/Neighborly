@@ -1,9 +1,14 @@
 import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { z } from "zod";
 
-import { type AppHandler, createApp } from "./app";
-import { MAX_DEMO_ACTIVE_SESSIONS } from "./auth";
+import { HandleSchema, IdSchema } from "../src/lib/contracts";
+import { type AppHandler, createApp, resolveClientAddress } from "./app";
+import { AuthService, MAX_DEMO_ACTIVE_SESSIONS } from "./auth";
 import { FetchRouter } from "./http";
 import { LOCAL_FIXTURE_CREDENTIALS, seedDatabase } from "./seed";
 
@@ -47,16 +52,24 @@ const request = (
 	});
 };
 
-const createTestApp = async (): Promise<TestApp> => {
+const createTestApp = async (
+	options: {
+		allowedOrigins?: readonly string[];
+		randomBytes?: (size: number) => Uint8Array;
+		trustProxy?: boolean;
+	} = {},
+): Promise<TestApp> => {
 	const db = new Database(":memory:");
 	const now = { value: Date.UTC(2026, 7, 19) };
 	const fetch = createApp({
 		db,
 		seed: false,
-		allowedOrigins: [ORIGIN],
+		allowedOrigins: options.allowedOrigins ?? [ORIGIN],
+		trustProxy: options.trustProxy,
 		now: () => now.value,
 		csrfSecret: "test-csrf-secret",
 		clientAddress: () => "127.0.0.1",
+		randomBytes: options.randomBytes,
 	});
 
 	for (const neighborhood of [
@@ -68,7 +81,7 @@ const createTestApp = async (): Promise<TestApp> => {
 				id, slug, name, city, state, timezone, description, image_path,
 				created_at, updated_at
 			) VALUES (?, ?, ?, 'Testville', 'TS', 'America/New_York',
-				'Test neighborhood used only for isolated identity tests.', '/assets/logo.svg', ?, ?)`,
+				'Test neighborhood used only for isolated identity tests.', '/images/logo-with-text.svg', ?, ?)`,
 		).run(
 			neighborhood[0],
 			neighborhood[1],
@@ -122,6 +135,89 @@ const login = async (app: TestApp, email = "member@neighborly.test") => {
 };
 
 describe("identity boundary", () => {
+	test("reports ready after bounded database write and migration checks", async () => {
+		const app = await createTestApp();
+		try {
+			const response = await app.fetch(request("/api/health", "GET"));
+			expect(response.status).toBe(200);
+			const body = (await response.json()) as {
+				data: {
+					status: string;
+					database: { migrationsApplied: number; writable: boolean };
+				};
+			};
+			expect(body.data.status).toBe("ready");
+			expect(body.data.database.writable).toBe(true);
+			expect(body.data.database.migrationsApplied).toBeGreaterThan(0);
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("uses a bounded transaction rather than an integrity scan for readiness", () => {
+		const statements: string[] = [];
+		const db = {
+			run(statement: string) {
+				statements.push(statement);
+			},
+			prepare(statement: string) {
+				statements.push(statement);
+				return { run: () => ({ changes: 0 }) };
+			},
+			query(statement: string) {
+				statements.push(statement);
+				return { get: () => ({ count: 1 }) };
+			},
+		} as unknown as Database;
+
+		expect(new AuthService({ db }).health()).toEqual({
+			migrationsApplied: 1,
+			writable: true,
+		});
+		expect(statements).toEqual([
+			"BEGIN IMMEDIATE",
+			"DELETE FROM contact_messages WHERE expires_at <= ?",
+			"SELECT count(*) AS count FROM migrations",
+			"COMMIT",
+		]);
+	});
+
+	test("returns unavailable after rolling back failed readiness maintenance", async () => {
+		const app = await createTestApp();
+		try {
+			app.db
+				.prepare(
+					`INSERT INTO contact_messages (
+						id, name, email, message, created_at, expires_at, honeypot
+					) VALUES (?, ?, ?, ?, ?, ?, '')`,
+				)
+				.run(
+					"msg_failed_health_cleanup",
+					"Expired Contact",
+					"expired-health-cleanup@neighborly.test",
+					"This expired contact message must remain after a failed health check.",
+					app.now.value - 1_000,
+					app.now.value,
+				);
+			app.db.exec(`
+				CREATE TRIGGER fail_health_cleanup
+				BEFORE DELETE ON contact_messages
+				BEGIN
+					SELECT RAISE(ABORT, 'health maintenance failure');
+				END;
+			`);
+
+			const response = await app.fetch(request("/api/health", "GET"));
+
+			expect(response.status).toBe(503);
+			expect(app.db.query("SELECT id FROM contact_messages").all()).toEqual([
+				{ id: "msg_failed_health_cleanup" },
+			]);
+		} finally {
+			app.db.close();
+		}
+	});
+
 	test("registers a user with an opaque hashed session and restores the session", async () => {
 		const app = await createTestApp();
 		try {
@@ -151,6 +247,91 @@ describe("identity boundary", () => {
 			const stored = app.db.query("SELECT token_hash FROM sessions").all();
 			expect(stored).toHaveLength(1);
 			expect(JSON.stringify(stored)).not.toContain(cookie.split("=", 2)[1]);
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("keeps generated IDs and collision handles schema-safe for trailing base64url symbols", async () => {
+		const entropySizes: number[] = [];
+		const bytes = Uint8Array.from({ length: 32 }, () => 0xff);
+		expect(
+			Buffer.from(bytes.slice(0, 12)).toString("base64url").endsWith("_"),
+		).toBe(true);
+		const app = await createTestApp({
+			randomBytes(size) {
+				entropySizes.push(size);
+				return bytes.slice(0, size);
+			},
+		});
+		try {
+			app.db
+				.prepare(
+					`INSERT INTO users (
+						id, email, password_hash, name, handle, avatar_path, bio,
+						neighborhood_id, is_demo, created_at, updated_at, last_active_at
+					) VALUES (?, ?, ?, ?, ?, '', '', 'nh_test_001', 0, ?, ?, ?)`,
+				)
+				.run(
+					"usr_handle_001",
+					"taken@neighborly.test",
+					"unusable-password-hash",
+					"Handle Holder",
+					"collision",
+					app.now.value,
+					app.now.value,
+					app.now.value,
+				);
+
+			const registration = await app.fetch(
+				request("/api/auth/register", "POST", {
+					name: "Collision Neighbor",
+					email: "collision@neighborly.test",
+					password: PASSWORD,
+					neighborhoodId: "nh_test_001",
+				}),
+			);
+			expect(registration.status).toBe(201);
+			const body = (await registration.json()) as {
+				data: { id: string; handle: string; email: string };
+			};
+			expect(IdSchema.safeParse(body.data.id).success).toBe(true);
+			expect(HandleSchema.safeParse(body.data.handle).success).toBe(true);
+			expect(body.data.handle).toBe("collision_ffffff");
+			expect(
+				app.db
+					.query(
+						"SELECT id, handle, email FROM users WHERE email = 'collision@neighborly.test'",
+					)
+					.get(),
+			).toEqual({
+				id: body.data.id,
+				handle: body.data.handle,
+				email: body.data.email,
+			});
+
+			const cookie = cookieFrom(registration);
+			const token = cookie.split("=", 2)[1];
+			expect(token).toBe(Buffer.from(bytes).toString("base64url"));
+			const session = await app.fetch(
+				request("/api/session", "GET", undefined, { cookie }),
+			);
+			expect(session.status).toBe(200);
+
+			const contact = await app.fetch(
+				request("/api/contact", "POST", {
+					name: "Contact Neighbor",
+					email: "contact@neighborly.test",
+					message: "A message that is long enough to be accepted.",
+				}),
+			);
+			expect(contact.status).toBe(202);
+			const message = app.db
+				.query("SELECT id FROM contact_messages WHERE email = ?")
+				.get("contact@neighborly.test") as { id: string } | null;
+			expect(message).not.toBeNull();
+			expect(IdSchema.safeParse(message?.id).success).toBe(true);
+			expect(entropySizes).toEqual([12, 3, 32, 12]);
 		} finally {
 			app.db.close();
 		}
@@ -212,6 +393,7 @@ describe("identity boundary", () => {
 						},
 						{ forwardedFor: `198.51.100.${count}` },
 					),
+					"127.0.0.1",
 				);
 				expect(response.status).toBe(401);
 			}
@@ -225,8 +407,65 @@ describe("identity boundary", () => {
 					},
 					{ forwardedFor: "203.0.113.99" },
 				),
+				"127.0.0.1",
 			);
 			expect(limited.status).toBe(429);
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("uses the rightmost valid forwarded address only for trusted proxies", async () => {
+		const app = await createTestApp({ trustProxy: true });
+		try {
+			for (let count = 0; count < 7; count += 1) {
+				const response = await app.fetch(
+					request(
+						"/api/auth/login",
+						"POST",
+						{
+							email: `trusted-source-${count}@neighborly.test`,
+							password: "not-the-password",
+						},
+						{
+							forwardedFor: `198.51.100.1, 203.0.113.${count + 1}`,
+						},
+					),
+					"127.0.0.1",
+				);
+				expect(response.status).toBe(401);
+			}
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("falls back to the peer address for invalid forwarded addresses", () => {
+		const peerAddress = "127.0.0.1";
+		const forwarded = new Request(`${ORIGIN}/api/auth/login`, {
+			headers: { "X-Forwarded-For": "198.51.100.1, not-an-ip" },
+		});
+		expect(resolveClientAddress(forwarded, peerAddress, true)).toBe(
+			peerAddress,
+		);
+		expect(resolveClientAddress(forwarded, peerAddress, false)).toBe(
+			peerAddress,
+		);
+	});
+
+	test("accepts a configured public origin for proxy-rewritten requests", async () => {
+		const publicOrigin = "https://neighborly.test";
+		const app = await createTestApp({ allowedOrigins: [publicOrigin] });
+		try {
+			const response = await app.fetch(
+				request(
+					"/api/auth/login",
+					"POST",
+					{ email: "member@neighborly.test", password: PASSWORD },
+					{ origin: publicOrigin },
+				),
+			);
+			expect(response.status).toBe(200);
 		} finally {
 			app.db.close();
 		}
@@ -301,6 +540,32 @@ describe("identity boundary", () => {
 			expect(await updated.json()).toMatchObject({
 				data: { bio: "Updated safely." },
 			});
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("rejects external avatar URLs without persisting them", async () => {
+		const app = await createTestApp();
+		try {
+			const session = await login(app);
+			const response = await app.fetch(
+				request(
+					"/api/me",
+					"PATCH",
+					{ avatarPath: "https://tracker.example/pixel.png" },
+					session,
+				),
+			);
+			expect(response.status).toBe(422);
+			expect(await response.json()).toMatchObject({
+				error: { code: "VALIDATION_ERROR" },
+			});
+			expect(
+				app.db
+					.query("SELECT avatar_path FROM users WHERE id = 'usr_test_001'")
+					.get(),
+			).toEqual({ avatar_path: "" });
 		} finally {
 			app.db.close();
 		}
@@ -581,20 +846,82 @@ describe("identity boundary", () => {
 		}
 	});
 
-	test("fails closed for a production data path and seeds a credentialless public demo", async () => {
+	test("fails closed for production data, public-origin, and proxy settings", async () => {
 		const originalNodeEnv = process.env.NODE_ENV;
 		const originalDatabasePath = process.env.NEIGHBORLY_DB_PATH;
+		const originalPublicOrigins = process.env.NEIGHBORLY_PUBLIC_ORIGINS;
+		const originalTrustProxy = process.env.NEIGHBORLY_TRUST_PROXY;
+		const originalAllowedOrigins = process.env.NEIGHBORLY_ALLOWED_ORIGINS;
 		try {
 			process.env.NODE_ENV = "production";
 			Reflect.deleteProperty(process.env, "NEIGHBORLY_DB_PATH");
+			Reflect.deleteProperty(process.env, "NEIGHBORLY_PUBLIC_ORIGINS");
+			Reflect.deleteProperty(process.env, "NEIGHBORLY_TRUST_PROXY");
+			process.env.NEIGHBORLY_ALLOWED_ORIGINS = ORIGIN;
 			expect(() => createApp({ allowedOrigins: [ORIGIN] })).toThrow(
 				"NEIGHBORLY_DB_PATH is required in production.",
 			);
 
 			const db = new Database(":memory:");
-			const fetch = createApp({ db, allowedOrigins: [ORIGIN] });
+			expect(() => createApp({ db, seed: false })).toThrow(
+				"NEIGHBORLY_PUBLIC_ORIGINS is required in production.",
+			);
+			process.env.NEIGHBORLY_PUBLIC_ORIGINS = "https://neighborly.test/";
+			process.env.NEIGHBORLY_TRUST_PROXY = "1";
+			expect(() => createApp({ db, seed: false })).toThrow(
+				"NEIGHBORLY_PUBLIC_ORIGINS must contain canonical absolute HTTP(S) origins.",
+			);
+			process.env.NEIGHBORLY_PUBLIC_ORIGINS = `${ORIGIN},${ORIGIN}`;
+			Reflect.deleteProperty(process.env, "NEIGHBORLY_TRUST_PROXY");
+			expect(() => createApp({ db, seed: false })).toThrow(
+				"NEIGHBORLY_TRUST_PROXY=1 is required in production.",
+			);
+			process.env.NEIGHBORLY_TRUST_PROXY = "1";
+
+			process.env.NEIGHBORLY_DB_PATH = " :memory: ";
+			expect(() =>
+				createApp({
+					allowedOrigins: [ORIGIN],
+					trustProxy: true,
+					seed: false,
+				}),
+			).toThrow("Production database path must not be :memory:.");
+			expect(() =>
+				createApp({
+					databasePath: "\t:memory:\n",
+					allowedOrigins: [ORIGIN],
+					trustProxy: true,
+					seed: false,
+				}),
+			).toThrow("Production database path must not be :memory:.");
+			Reflect.deleteProperty(process.env, "NEIGHBORLY_DB_PATH");
+
+			const databaseDirectory = await mkdtemp(
+				join(tmpdir(), "neighborly-production-"),
+			);
+			let persistentApp: AppHandler | undefined;
+			try {
+				persistentApp = createApp({
+					databasePath: join(databaseDirectory, "neighborly.sqlite"),
+					seed: false,
+				});
+				const health = await persistentApp(request("/api/health", "GET"));
+				expect(health.status).toBe(200);
+			} finally {
+				await persistentApp?.close?.();
+				await rm(databaseDirectory, { force: true, recursive: true });
+			}
+
+			const fetch = createApp({ db, seed: true });
 			const demo = await fetch(request("/api/auth/demo", "POST", {}));
 			expect(demo.status).toBe(200);
+
+			const seededImage = await fetch(
+				request("/api/listing-images/img_001", "GET"),
+			);
+			expect(seededImage.status).toBe(200);
+			expect(seededImage.headers.get("content-type")).toBe("image/png");
+			expect((await seededImage.arrayBuffer()).byteLength).toBeGreaterThan(0);
 
 			const mutableFixtureEmails = Object.keys(
 				LOCAL_FIXTURE_CREDENTIALS,
@@ -624,6 +951,21 @@ describe("identity boundary", () => {
 				Reflect.deleteProperty(process.env, "NEIGHBORLY_DB_PATH");
 			} else {
 				process.env.NEIGHBORLY_DB_PATH = originalDatabasePath;
+			}
+			if (originalPublicOrigins === undefined) {
+				Reflect.deleteProperty(process.env, "NEIGHBORLY_PUBLIC_ORIGINS");
+			} else {
+				process.env.NEIGHBORLY_PUBLIC_ORIGINS = originalPublicOrigins;
+			}
+			if (originalTrustProxy === undefined) {
+				Reflect.deleteProperty(process.env, "NEIGHBORLY_TRUST_PROXY");
+			} else {
+				process.env.NEIGHBORLY_TRUST_PROXY = originalTrustProxy;
+			}
+			if (originalAllowedOrigins === undefined) {
+				Reflect.deleteProperty(process.env, "NEIGHBORLY_ALLOWED_ORIGINS");
+			} else {
+				process.env.NEIGHBORLY_ALLOWED_ORIGINS = originalAllowedOrigins;
 			}
 		}
 	});
@@ -769,5 +1111,120 @@ describe("identity boundary", () => {
 		);
 		expect(invalidSyntax.status).toBe(400);
 		expect((await invalidSyntax.json()).error.code).toBe("BAD_REQUEST");
+	});
+
+	test("acknowledges filled contact honeypots without persisting them", async () => {
+		const app = await createTestApp();
+		try {
+			const response = await app.fetch(
+				request("/api/contact", "POST", {
+					name: "Automation Trap",
+					email: "automation@neighborly.test",
+					message: "This bot-filled contact submission is discarded.",
+					honeypot: "https://spam.invalid/landing",
+				}),
+			);
+
+			expect(response.status).toBe(202);
+			expect(await response.json()).toEqual({ data: { acknowledged: true } });
+			expect(
+				app.db.query("SELECT count(*) AS count FROM contact_messages").get(),
+			).toEqual({ count: 0 });
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("persists normal contacts and clears expired contacts during contact traffic", async () => {
+		const app = await createTestApp();
+		try {
+			app.db
+				.prepare(
+					`INSERT INTO contact_messages (
+						id, name, email, message, created_at, expires_at, honeypot
+					) VALUES (?, ?, ?, ?, ?, ?, '')`,
+				)
+				.run(
+					"msg_expired_before_contact",
+					"Expired Contact",
+					"expired-before-contact@neighborly.test",
+					"This expired contact message must be deleted.",
+					app.now.value - 1_000,
+					app.now.value,
+				);
+
+			const response = await app.fetch(
+				request("/api/contact", "POST", {
+					name: "Normal Contact",
+					email: "normal-contact@neighborly.test",
+					message: "This normal contact submission is retained.",
+				}),
+			);
+
+			expect(response.status).toBe(202);
+			expect(
+				app.db
+					.query(
+						`SELECT name, email, message, created_at AS createdAt,
+						 expires_at AS expiresAt, honeypot
+						 FROM contact_messages`,
+					)
+					.all(),
+			).toEqual([
+				{
+					name: "Normal Contact",
+					email: "normal-contact@neighborly.test",
+					message: "This normal contact submission is retained.",
+					createdAt: app.now.value,
+					expiresAt: app.now.value + 30 * 24 * 60 * 60 * 1_000,
+					honeypot: "",
+				},
+			]);
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("purges only expired contact messages during health maintenance", async () => {
+		const app = await createTestApp();
+		try {
+			app.db
+				.prepare(
+					`INSERT INTO contact_messages (
+						id, name, email, message, created_at, expires_at, honeypot
+					) VALUES (?, ?, ?, ?, ?, ?, '')`,
+				)
+				.run(
+					"msg_expired_contact",
+					"Expired Contact",
+					"expired-contact@neighborly.test",
+					"This expired contact message must be deleted.",
+					app.now.value - 1_000,
+					app.now.value,
+				);
+			app.db
+				.prepare(
+					`INSERT INTO contact_messages (
+						id, name, email, message, created_at, expires_at, honeypot
+					) VALUES (?, ?, ?, ?, ?, ?, '')`,
+				)
+				.run(
+					"msg_active_contact",
+					"Active Contact",
+					"active-contact@neighborly.test",
+					"This unexpired contact message must remain.",
+					app.now.value - 1_000,
+					app.now.value + 1_000,
+				);
+
+			const response = await app.fetch(request("/api/health", "GET"));
+
+			expect(response.status).toBe(200);
+			expect(
+				app.db.query("SELECT id FROM contact_messages ORDER BY id").all(),
+			).toEqual([{ id: "msg_active_contact" }]);
+		} finally {
+			app.db.close();
+		}
 	});
 });

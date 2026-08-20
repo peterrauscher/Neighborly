@@ -153,3 +153,13 @@ canvas {
 	white-space: nowrap !important;
 	border: 0 !important;
 }
+
+/* Route-level lazy loading state */
+.routeLoading {
+	display: grid;
+	min-block-size: 12rem;
+	place-items: center;
+	padding: var(--space-8) var(--container-padding);
+	color: var(--color-ink-muted);
+	text-align: center;
+}

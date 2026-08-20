@@ -1,9 +1,4 @@
-import {
-	ArrowRight,
-	CheckCircle,
-	ShieldCheck,
-	Sparkle,
-} from "@phosphor-icons/react";
+import { ArrowRight, Sparkle } from "@phosphor-icons/react";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -121,6 +116,7 @@ export function LoginPage() {
 				setFieldErrors(nextFieldErrors);
 
 				const topMessage = formErr || err.message || "Failed to sign in.";
+				setServerError(topMessage);
 				setAnnouncement(topMessage);
 
 				if (nextFieldErrors.email) {
@@ -176,42 +172,17 @@ export function LoginPage() {
 						<div className={styles.badgeRow}>
 							<span className={styles.awardBadge}>
 								<Sparkle size={14} weight="fill" />
-								2025 Civic Technology Design Winner
+								Atlas Madness 2023 Grand Prize Winner, sponsored by Google and
+								MongoDB
 							</span>
 						</div>
 						<h2 id="login-hero-heading" className={styles.heroTitle}>
-							Local trust, verified neighbor exchanges.
+							Share useful things nearby.
 						</h2>
 						<p className={styles.heroBody}>
-							Neighborly powers hyper-local tool sharing, skill exchanges, and
-							mutual aid without advertising or commercial algorithms.
-						</p>
-						<ul className={styles.trustList}>
-							<li className={styles.trustItem}>
-								<ShieldCheck size={20} className={styles.trustIcon} />
-								<span>
-									<strong>Zero ad tracking:</strong> Your personal data is never
-									monetized.
-								</span>
-							</li>
-							<li className={styles.trustItem}>
-								<CheckCircle size={20} className={styles.trustIcon} />
-								<span>
-									<strong>Verified circles:</strong> Mutual trust boundaries
-									protect every exchange.
-								</span>
-							</li>
-						</ul>
-					</div>
-
-					<div className={styles.heroQuote}>
-						<p className={styles.quoteText}>
-							&ldquo;Neighborly helped our block share lawn care equipment and
-							building supplies effortlessly during our community garden
-							project.&rdquo;
-						</p>
-						<p className={styles.quoteAuthor}>
-							&mdash; Maplewood Community Council
+							Browse listings, offer help, and connect with neighbors.
+							Neighborhoods are self-selected; Neighborly does not verify
+							identities, addresses, memberships, items, or exchanges.
 						</p>
 					</div>
 				</section>
@@ -220,7 +191,7 @@ export function LoginPage() {
 				<main className={styles.formCard} aria-labelledby="login-form-title">
 					<header className={styles.formHeader}>
 						<h1 id="login-form-title" className={styles.formTitle}>
-							Sign in to your circle
+							Sign in
 						</h1>
 						<p className={styles.formSubtitle}>
 							Need an account?{" "}
@@ -360,9 +331,9 @@ export function RegisterPage() {
 	const neighborhoodRef = useRef<HTMLSelectElement>(null);
 	const errorAlertRef = useRef<HTMLDivElement>(null);
 
-	// Always enter /onboarding, carrying intended post-onboarding target as encoded redirect
-	const intendedTarget = safeRedirectTarget(location.search, "/feed");
-	const onboardingTarget = `/onboarding?redirect=${encodeURIComponent(intendedTarget)}`;
+	// Registration proceeds through onboarding; demos go directly to the safe target.
+	const redirectTarget = safeRedirectTarget(location.search, "/feed");
+	const onboardingTarget = `/onboarding?redirect=${encodeURIComponent(redirectTarget)}`;
 
 	// Load available neighborhoods for registration select
 	useEffect(() => {
@@ -379,7 +350,9 @@ export function RegisterPage() {
 				}
 			} catch {
 				if (isMounted) {
-					setServerError("Failed to load available neighborhood list.");
+					const message = "Failed to load available neighborhood list.";
+					setServerError(message);
+					setAnnouncement(message);
 				}
 			} finally {
 				if (isMounted) {
@@ -478,6 +451,8 @@ export function RegisterPage() {
 
 				const topMessage =
 					formErr || err.message || "Failed to create account.";
+				setServerError(topMessage);
+				setAnnouncement(topMessage);
 
 				if (nextFieldErrors.name) nameRef.current?.focus();
 				else if (nextFieldErrors.email) emailRef.current?.focus();
@@ -502,7 +477,7 @@ export function RegisterPage() {
 		try {
 			const user = await loginDemo();
 			if (user) {
-				navigate(onboardingTarget);
+				navigate(redirectTarget);
 			}
 		} catch (err) {
 			const msg =
@@ -534,42 +509,18 @@ export function RegisterPage() {
 					<div className={styles.heroContent}>
 						<div className={styles.badgeRow}>
 							<span className={styles.awardBadge}>
-								<ShieldCheck size={14} weight="fill" />
-								Verified Local Network
+								<Sparkle size={14} weight="fill" />
+								Atlas Madness 2023 Grand Prize Winner, sponsored by Google and
+								MongoDB
 							</span>
 						</div>
 						<h2 id="register-hero-heading" className={styles.heroTitle}>
-							Join your neighborhood circle.
+							Join your neighborhood.
 						</h2>
 						<p className={styles.heroBody}>
-							Exchange tools, borrow equipment, and help local neighbors in a
-							safe, verified civic space.
-						</p>
-						<ul className={styles.trustList}>
-							<li className={styles.trustItem}>
-								<CheckCircle size={20} className={styles.trustIcon} />
-								<span>
-									<strong>Privacy Guarantee:</strong> Precise street addresses
-									and house numbers are never stored or displayed.
-								</span>
-							</li>
-							<li className={styles.trustItem}>
-								<CheckCircle size={20} className={styles.trustIcon} />
-								<span>
-									<strong>Community Circle:</strong> Local exchanges stay within
-									your neighborhood walking/driving radius.
-								</span>
-							</li>
-						</ul>
-					</div>
-
-					<div className={styles.heroQuote}>
-						<p className={styles.quoteText}>
-							&ldquo;Knowing who lives on my block and being able to share
-							resources has transformed our neighborhood connection.&rdquo;
-						</p>
-						<p className={styles.quoteAuthor}>
-							&mdash; Resident, Oakwood Circle
+							Choose a neighborhood to browse local listings and requests.
+							Neighborhoods are self-selected; Neighborly does not verify
+							identities, addresses, memberships, items, or exchanges.
 						</p>
 					</div>
 				</section>
@@ -652,7 +603,7 @@ export function RegisterPage() {
 							<Select
 								ref={neighborhoodRef}
 								id="register-neighborhood"
-								label="Select Neighborhood Circle"
+								label="Select neighborhood"
 								required
 								value={neighborhoodId}
 								onChange={(e) => setNeighborhoodId(e.target.value)}
@@ -663,13 +614,14 @@ export function RegisterPage() {
 								}
 								helpText={
 									isLoadingNeighborhoods
-										? "Loading available circles..."
+										? "Loading available neighborhoods..."
 										: undefined
 								}
 							/>
 							<p className={styles.privacyNote}>
-								Your address is never publicly shared. Neighborhoods only define
-								your local exchange radius.
+								Your neighborhood selection is self-selected. Neighborly does
+								not verify identities, addresses, memberships, items, or
+								exchanges.
 							</p>
 						</div>
 

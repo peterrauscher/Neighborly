@@ -2,7 +2,12 @@ import { createHash, randomBytes } from "node:crypto";
 
 import type { Database, SQLQueryBindings } from "bun:sqlite";
 
-import type { NeighborhoodDto, SelfUser } from "../src/lib/contracts";
+import {
+	HandleSchema,
+	IdSchema,
+	type NeighborhoodDto,
+	type SelfUser,
+} from "../src/lib/contracts";
 import { HttpError } from "./http";
 
 const SESSION_COOKIE_NAME = "neighborly_session";
@@ -313,7 +318,7 @@ export class AuthService {
 		const passwordHash = await Bun.password.hash(input.password, {
 			algorithm: "argon2id",
 		});
-		const userId = `usr_${this.token(12)}`;
+		const userId = this.newIdentifier("usr");
 		const handle = this.newHandle(input.email);
 
 		try {
@@ -562,8 +567,9 @@ export class AuthService {
 		if (!this.rateLimit("contact", clientAddress, input.email, 6, 5)) {
 			throw new HttpError("RATE_LIMITED");
 		}
-		if (input.honeypot) return;
 		const now = this.#now();
+		this.purgeExpiredContactMessages(now);
+		if (input.honeypot) return;
 		this.#db
 			.prepare(
 				`INSERT INTO contact_messages (
@@ -571,7 +577,7 @@ export class AuthService {
 				) VALUES (?, ?, ?, ?, ?, ?, '')`,
 			)
 			.run(
-				`msg_${this.token(12)}`,
+				this.newIdentifier("msg"),
 				input.name,
 				input.email,
 				input.message,
@@ -582,21 +588,21 @@ export class AuthService {
 
 	health(): { migrationsApplied: number; writable: boolean } {
 		try {
-			const integrity = getOne<{ integrity: string }>(
-				this.#db,
-				"PRAGMA integrity_check",
-				[],
-			);
-			if (integrity?.integrity !== "ok")
-				return { migrationsApplied: 0, writable: false };
+			const now = this.#now();
 			this.#db.run("BEGIN IMMEDIATE");
-			this.#db.run("ROLLBACK");
-			const migrations = getOne<{ count: number }>(
-				this.#db,
-				"SELECT count(*) AS count FROM migrations",
-				[],
-			);
-			return { migrationsApplied: migrations?.count ?? 0, writable: true };
+			try {
+				this.purgeExpiredContactMessages(now);
+				const migrations = getOne<{ count: number }>(
+					this.#db,
+					"SELECT count(*) AS count FROM migrations",
+					[],
+				);
+				this.#db.run("COMMIT");
+				return { migrationsApplied: migrations?.count ?? 0, writable: true };
+			} catch {
+				this.#db.run("ROLLBACK");
+				return { migrationsApplied: 0, writable: false };
+			}
 		} catch {
 			return { migrationsApplied: 0, writable: false };
 		}
@@ -682,6 +688,12 @@ export class AuthService {
 		};
 	}
 
+	private purgeExpiredContactMessages(now: number) {
+		this.#db
+			.prepare("DELETE FROM contact_messages WHERE expires_at <= ?")
+			.run(now);
+	}
+
 	private sessionToken(request: Request) {
 		return getCookie(request, SESSION_COOKIE_NAME);
 	}
@@ -692,6 +704,14 @@ export class AuthService {
 
 	private token(size: number) {
 		return Buffer.from(this.#randomBytes(size)).toString("base64url");
+	}
+
+	private schemaSafeFragment(size: number) {
+		return Buffer.from(this.#randomBytes(size)).toString("hex");
+	}
+
+	private newIdentifier(prefix: "usr" | "msg") {
+		return IdSchema.parse(`${prefix}_${this.schemaSafeFragment(12)}`);
 	}
 
 	private cookie(value: string, maxAge: number) {
@@ -767,7 +787,7 @@ export class AuthService {
 			.replace(/^_+|_+$/g, "")
 			.slice(0, 20);
 		const base = (local.length >= 3 ? local : "member").slice(0, 20);
-		let candidate = base;
+		let candidate = HandleSchema.parse(base);
 		while (
 			getOne<{ id: string }>(
 				this.#db,
@@ -775,7 +795,7 @@ export class AuthService {
 				[candidate],
 			)
 		) {
-			candidate = `${base.slice(0, 20)}_${this.token(4).slice(0, 6)}`;
+			candidate = HandleSchema.parse(`${base}_${this.schemaSafeFragment(3)}`);
 		}
 		return candidate;
 	}

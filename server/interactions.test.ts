@@ -1,6 +1,12 @@
 import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
 
+import {
+	ProfileExchangeHistoryResponseSchema,
+	RequestParticipantSchema,
+	RequestsResponseSchema,
+} from "../src/lib/contracts";
+
 import { type AppHandler, createApp } from "./app";
 
 const ORIGIN = "http://neighborly.test";
@@ -80,7 +86,7 @@ const createTestApp = async (): Promise<TestApp> => {
 			`INSERT INTO neighborhoods (
 				id, slug, name, city, state, timezone, description, image_path, created_at, updated_at
 			) VALUES (?, ?, ?, 'Testville', 'TS', 'America/New_York',
-				'Test neighborhood used only for isolated interaction route tests.', '/assets/logo.svg', ?, ?)`,
+				'Test neighborhood used only for isolated interaction route tests.', '/images/logo-with-text.svg', ?, ?)`,
 		).run(id, slug, name, now.value, now.value);
 	}
 	const passwordHash = await Bun.password.hash(PASSWORD, {
@@ -212,7 +218,11 @@ const createRequest = async (
 	);
 	return {
 		response,
-		data: await responseJson<{ data: { id: string } }>(response),
+		data: {
+			data: RequestParticipantSchema.parse(
+				(await responseJson<{ data: unknown }>(response)).data,
+			),
+		},
 	};
 };
 
@@ -220,6 +230,65 @@ const requestStatus = (app: TestApp, requestId: string) =>
 	app.db.prepare("SELECT status FROM requests WHERE id = ?").get(requestId) as {
 		status: string;
 	};
+
+const insertCompletedExchange = (
+	app: TestApp,
+	options: {
+		listingId: string;
+		requestId: string;
+		ownerId: string;
+		requesterId: string;
+		title: string;
+		completedAt: number;
+	},
+) => {
+	insertListing(app, {
+		id: options.listingId,
+		ownerId: options.ownerId,
+		status: "completed",
+		title: options.title,
+	});
+	app.db
+		.prepare(
+			`INSERT INTO requests (
+				id, listing_id, requester_id, opening_message, status, created_at, updated_at
+			) VALUES (?, ?, ?, 'A completed exchange with no private details in profile history.',
+				'completed', ?, ?)`,
+		)
+		.run(
+			options.requestId,
+			options.listingId,
+			options.requesterId,
+			app.now.value,
+			options.completedAt,
+		);
+};
+
+const insertReview = (
+	app: TestApp,
+	options: {
+		id: string;
+		requestId: string;
+		reviewerId: string;
+		rating: number;
+		body: string;
+		createdAt: number;
+	},
+) => {
+	app.db
+		.prepare(
+			`INSERT INTO reviews (id, request_id, reviewer_id, rating, body, created_at)
+			 VALUES (?, ?, ?, ?, ?, ?)`,
+		)
+		.run(
+			options.id,
+			options.requestId,
+			options.reviewerId,
+			options.rating,
+			options.body,
+			options.createdAt,
+		);
+};
 
 describe("interaction boundaries", () => {
 	test("guards type, membership, role, stale, and atomic request transitions", async () => {
@@ -279,6 +348,7 @@ describe("interaction boundaries", () => {
 
 			const first = await createRequest(app, "list_lend_001", member);
 			expect(first.response.status).toBe(201);
+			expect(first.data.data.hasViewerReview).toBe(false);
 			const second = await createRequest(
 				app,
 				"list_lend_001",
@@ -429,6 +499,31 @@ describe("interaction boundaries", () => {
 					)
 				).status,
 			).toBe(201);
+			const tiedAt = app.now.value + 1;
+			app.db
+				.prepare(
+					`INSERT INTO messages (id, request_id, sender_id, body, created_at)
+					 VALUES (?, ?, ?, ?, ?)`,
+				)
+				.run(
+					"msg_tie_a_001",
+					requestId,
+					ids.member,
+					"First same-time message.",
+					tiedAt,
+				);
+			app.db
+				.prepare(
+					`INSERT INTO messages (id, request_id, sender_id, body, created_at)
+					 VALUES (?, ?, ?, ?, ?)`,
+				)
+				.run(
+					"msg_tie_b_002",
+					requestId,
+					ids.owner,
+					"Second same-time message.",
+					tiedAt,
+				);
 			const privateThread = await app.fetch(
 				request(
 					`/api/requests/${requestId}/messages`,
@@ -438,7 +533,7 @@ describe("interaction boundaries", () => {
 				),
 			);
 			expect(privateThread.status).toBe(403);
-			const firstPage = await app.fetch(
+			const newestPage = await app.fetch(
 				request(
 					`/api/requests/${requestId}/messages?limit=1`,
 					"GET",
@@ -446,16 +541,16 @@ describe("interaction boundaries", () => {
 					member,
 				),
 			);
-			const firstPageData = await responseJson<{
+			const newestPageData = await responseJson<{
 				data: { items: Array<{ body: string }>; nextCursor: string | null };
-			}>(firstPage);
-			expect(firstPageData.data.items[0]?.body).toBe(
-				"I can pick this up after lunch.",
+			}>(newestPage);
+			expect(newestPageData.data.items[0]?.body).toBe(
+				"Second same-time message.",
 			);
-			expect(firstPageData.data.nextCursor).toBeTruthy();
-			const secondPage = await app.fetch(
+			expect(newestPageData.data.nextCursor).toBeTruthy();
+			const olderTiePage = await app.fetch(
 				request(
-					`/api/requests/${requestId}/messages?limit=1&cursor=${firstPageData.data.nextCursor}`,
+					`/api/requests/${requestId}/messages?limit=1&cursor=${newestPageData.data.nextCursor}`,
 					"GET",
 					undefined,
 					member,
@@ -464,23 +559,72 @@ describe("interaction boundaries", () => {
 			expect(
 				(
 					await responseJson<{ data: { items: Array<{ body: string }> } }>(
-						secondPage,
+						olderTiePage,
 					)
 				).data.items[0]?.body,
-			).toBe("That pickup time works for me.");
-
+			).toBe("First same-time message.");
+			const chronologicalPage = await app.fetch(
+				request(
+					`/api/requests/${requestId}/messages?limit=3`,
+					"GET",
+					undefined,
+					member,
+				),
+			);
+			expect(
+				(
+					await responseJson<{ data: { items: Array<{ body: string }> } }>(
+						chronologicalPage,
+					)
+				).data.items.map((item) => item.body),
+			).toEqual([
+				"That pickup time works for me.",
+				"First same-time message.",
+				"Second same-time message.",
+			]);
+			app.now.value = tiedAt + 1;
 			expect(
 				(
 					await app.fetch(
 						request(
-							`/api/requests/${requestId}`,
-							"PATCH",
-							{ action: "accept" },
+							`/api/requests/${requestId}/messages`,
+							"POST",
+							{ body: "A new current update is available." },
 							owner,
 						),
 					)
 				).status,
-			).toBe(200);
+			).toBe(201);
+			const freshNewestPage = await app.fetch(
+				request(
+					`/api/requests/${requestId}/messages?limit=1`,
+					"GET",
+					undefined,
+					member,
+				),
+			);
+			expect(
+				(
+					await responseJson<{ data: { items: Array<{ body: string }> } }>(
+						freshNewestPage,
+					)
+				).data.items[0]?.body,
+			).toBe("A new current update is available.");
+
+			const accepted = await app.fetch(
+				request(
+					`/api/requests/${requestId}`,
+					"PATCH",
+					{ action: "accept" },
+					owner,
+				),
+			);
+			expect(accepted.status).toBe(200);
+			expect(
+				RequestParticipantSchema.parse(
+					(await responseJson<{ data: unknown }>(accepted)).data,
+				).hasViewerReview,
+			).toBe(false);
 			const requesterComplete = await app.fetch(
 				request(
 					`/api/requests/${requestId}`,
@@ -700,6 +844,266 @@ describe("interaction boundaries", () => {
 					}>(respondedProfile)
 				).data.responseHistory,
 			).toEqual({ totalRequests: 1, respondedRequests: 1, responseRate: 1 });
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("derives persisted review visibility per request participant", async () => {
+		const app = await createTestApp();
+		try {
+			insertCompletedExchange(app, {
+				listingId: "list_review_visibility_001",
+				requestId: "req_review_visibility_001",
+				ownerId: ids.owner,
+				requesterId: ids.member,
+				title: "Completed visibility test drill",
+				completedAt: app.now.value,
+			});
+			insertReview(app, {
+				id: "rev_review_visibility_owner",
+				requestId: "req_review_visibility_001",
+				reviewerId: ids.owner,
+				rating: 5,
+				body: "The owner review persisted before this request list refresh.",
+				createdAt: app.now.value,
+			});
+
+			const owner = await login(app, "owner@neighborly.test");
+			const member = await login(app, "member@neighborly.test");
+			const ownerRefresh = await app.fetch(
+				request("/api/requests?role=owner", "GET", undefined, owner),
+			);
+			expect(ownerRefresh.status).toBe(200);
+			expect(
+				RequestsResponseSchema.parse(await responseJson<unknown>(ownerRefresh))
+					.data.items[0]?.hasViewerReview,
+			).toBe(true);
+
+			const memberRefresh = await app.fetch(
+				request("/api/requests?role=requester", "GET", undefined, member),
+			);
+			expect(memberRefresh.status).toBe(200);
+			expect(
+				RequestsResponseSchema.parse(await responseJson<unknown>(memberRefresh))
+					.data.items[0]?.hasViewerReview,
+			).toBe(false);
+
+			expect(
+				(
+					await app.fetch(
+						request(
+							"/api/requests/req_review_visibility_001/reviews",
+							"POST",
+							{
+								rating: 4,
+								body: "The other participant can still leave their review.",
+							},
+							member,
+						),
+					)
+				).status,
+			).toBe(201);
+
+			const memberRefreshAfterReview = await app.fetch(
+				request("/api/requests?role=requester", "GET", undefined, member),
+			);
+			expect(
+				RequestsResponseSchema.parse(
+					await responseJson<unknown>(memberRefreshAfterReview),
+				).data.items[0]?.hasViewerReview,
+			).toBe(true);
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("lists only completed profile exchanges with safe opposite reviews and stable cursor pagination", async () => {
+		const app = await createTestApp();
+		try {
+			const newestAt = app.now.value + 4;
+			const tiedAt = app.now.value + 2;
+			const oldestAt = app.now.value + 1;
+			insertCompletedExchange(app, {
+				listingId: "list_history_004",
+				requestId: "req_history_004",
+				ownerId: ids.owner,
+				requesterId: ids.member,
+				title: "Newest completed drill",
+				completedAt: newestAt,
+			});
+			insertCompletedExchange(app, {
+				listingId: "list_history_003",
+				requestId: "req_history_003",
+				ownerId: ids.owner,
+				requesterId: ids.member,
+				title: "Unreviewed completed saw",
+				completedAt: tiedAt,
+			});
+			insertCompletedExchange(app, {
+				listingId: "list_history_002",
+				requestId: "req_history_002",
+				ownerId: ids.owner,
+				requesterId: ids.member,
+				title: "Older completed lamp",
+				completedAt: tiedAt,
+			});
+			insertCompletedExchange(app, {
+				listingId: "list_history_001",
+				requestId: "req_history_001",
+				ownerId: ids.memberTwo,
+				requesterId: ids.owner,
+				title: "Requester role exchange",
+				completedAt: oldestAt,
+			});
+			insertListing(app, {
+				id: "list_history_pending",
+				status: "active",
+				title: "Pending exchange excluded from history",
+			});
+			app.db
+				.prepare(
+					`INSERT INTO requests (
+						id, listing_id, requester_id, opening_message, status, created_at, updated_at
+					) VALUES (?, ?, ?, 'A pending exchange must never appear in profile history.',
+						'pending', ?, ?)`,
+				)
+				.run(
+					"req_history_pending",
+					"list_history_pending",
+					ids.member,
+					app.now.value,
+					app.now.value,
+				);
+			insertReview(app, {
+				id: "rev_history_opposite",
+				requestId: "req_history_004",
+				reviewerId: ids.member,
+				rating: 5,
+				body: "Careful with the drill and prompt at return.",
+				createdAt: newestAt + 1,
+			});
+			insertReview(app, {
+				id: "rev_history_self",
+				requestId: "req_history_004",
+				reviewerId: ids.owner,
+				rating: 1,
+				body: "The owner review must not appear on their own history.",
+				createdAt: newestAt + 1,
+			});
+			insertReview(app, {
+				id: "rev_history_requester",
+				requestId: "req_history_001",
+				reviewerId: ids.memberTwo,
+				rating: 4,
+				body: "Communicative requester and a smooth exchange.",
+				createdAt: oldestAt + 1,
+			});
+
+			const member = await login(app, "member@neighborly.test");
+			const firstResponse = await app.fetch(
+				request(
+					`/api/users/${ids.owner}/history?limit=2`,
+					"GET",
+					undefined,
+					member,
+				),
+			);
+			expect(firstResponse.status).toBe(200);
+			const first = ProfileExchangeHistoryResponseSchema.parse(
+				await responseJson<unknown>(firstResponse),
+			);
+			expect(first.data.items).toHaveLength(2);
+			expect(first.data.items.map((item) => item.listingId)).toEqual([
+				"list_history_004",
+				"list_history_003",
+			]);
+			expect(first.data.items[0]).toEqual({
+				listingId: "list_history_004",
+				listingTitle: "Newest completed drill",
+				listingType: "lend",
+				role: "owner",
+				completedAt: newestAt,
+				review: {
+					id: "rev_history_opposite",
+					rating: 5,
+					body: "Careful with the drill and prompt at return.",
+					createdAt: newestAt + 1,
+					reviewer: {
+						id: ids.member,
+						name: "Member Neighbor",
+						handle: "member_neighbor",
+						avatarPath: "",
+						bio: "",
+					},
+				},
+			});
+			expect(first.data.items[1]?.review).toBeNull();
+			expect(first.data.items[0]).not.toHaveProperty("requestId");
+			expect(first.data.items[0]).not.toHaveProperty("openingMessage");
+			expect(first.data.items[0]).not.toHaveProperty("cancellationReason");
+			expect(first.data.items[0]?.review?.reviewer).not.toHaveProperty("email");
+			expect(first.data.nextCursor).toBeTruthy();
+
+			const secondResponse = await app.fetch(
+				request(
+					`/api/users/${ids.owner}/history?limit=2&cursor=${first.data.nextCursor}`,
+					"GET",
+					undefined,
+					member,
+				),
+			);
+			expect(secondResponse.status).toBe(200);
+			const second = ProfileExchangeHistoryResponseSchema.parse(
+				await responseJson<unknown>(secondResponse),
+			);
+			expect(second.data.items.map((item) => item.listingId)).toEqual([
+				"list_history_002",
+				"list_history_001",
+			]);
+			expect(second.data.items[0]?.review).toBeNull();
+			expect(second.data.items[1]).toEqual({
+				listingId: "list_history_001",
+				listingTitle: "Requester role exchange",
+				listingType: "lend",
+				role: "requester",
+				completedAt: oldestAt,
+				review: {
+					id: "rev_history_requester",
+					rating: 4,
+					body: "Communicative requester and a smooth exchange.",
+					createdAt: oldestAt + 1,
+					reviewer: {
+						id: ids.memberTwo,
+						name: "Second Neighbor",
+						handle: "second_neighbor",
+						avatarPath: "",
+						bio: "",
+					},
+				},
+			});
+			expect(second.data.nextCursor).toBeNull();
+		} finally {
+			app.db.close();
+		}
+	});
+
+	test("requires an authenticated same-neighborhood viewer for profile history", async () => {
+		const app = await createTestApp();
+		try {
+			const anonymous = await app.fetch(
+				request(`/api/users/${ids.owner}/history`, "GET"),
+			);
+			expect(anonymous.status).toBe(401);
+
+			const outsider = await login(app, "outsider@neighborly.test");
+			const denied = await app.fetch(
+				request(`/api/users/${ids.owner}/history`, "GET", undefined, outsider),
+			);
+			expect(denied.status).toBe(403);
+			expect(
+				(await responseJson<{ error: { code: string } }>(denied)).error.code,
+			).toBe("FORBIDDEN");
 		} finally {
 			app.db.close();
 		}

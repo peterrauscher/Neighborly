@@ -7,7 +7,7 @@ import {
 	Sparkle,
 } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import {
 	Badge,
@@ -48,6 +48,8 @@ export function OnboardingPage() {
 	}, [state.status, user, location, navigate]);
 
 	useEffect(() => {
+		if (user?.isDemo) return;
+
 		let isMounted = true;
 		async function fetchNeighborhoods() {
 			try {
@@ -79,9 +81,11 @@ export function OnboardingPage() {
 		return () => {
 			isMounted = false;
 		};
-	}, [user?.neighborhood?.id]);
+	}, [user?.isDemo, user?.neighborhood?.id]);
 
 	const handleConfirm = async () => {
+		if (user?.isDemo) return;
+
 		if (!selectedId) {
 			setError("Please select a neighborhood circle.");
 			setAnnouncement("Please select a neighborhood circle.");
@@ -110,6 +114,10 @@ export function OnboardingPage() {
 	};
 
 	const currentNeighborhood = neighborhoods.find((n) => n.id === selectedId);
+
+	if (user?.isDemo) {
+		return <Navigate replace to="/feed" />;
+	}
 
 	if (state.status === "loading") {
 		return (
@@ -182,7 +190,7 @@ export function OnboardingPage() {
 						}}
 					>
 						<Badge variant="primary" icon={<Sparkle size={14} />}>
-							Step 1 of 1 &bull; Circle Verification
+							Step 1 of 1 &bull; Neighborhood selection
 						</Badge>
 					</div>
 
@@ -441,7 +449,7 @@ export function OnboardingPage() {
 						variant="primary"
 						size="lg"
 						isLoading={isSubmitting}
-						disabled={isLoading || isSubmitting || !selectedId}
+						disabled={user?.isDemo || isLoading || isSubmitting || !selectedId}
 						onClick={handleConfirm}
 						rightIcon={<ArrowRight size={18} />}
 					>

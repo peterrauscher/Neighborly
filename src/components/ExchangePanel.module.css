@@ -1,0 +1,206 @@
+.panel,
+.messageThread,
+.transitionPanel {
+	border-top: 1px solid var(--color-border-subtle);
+	padding-top: var(--space-6);
+}
+
+.header {
+	display: grid;
+	gap: var(--space-1);
+}
+
+.eyebrow {
+	margin: 0;
+	color: var(--color-forest);
+	font-family: var(--font-mono);
+	font-size: var(--text-xs);
+	font-weight: var(--font-weight-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.title {
+	margin: 0;
+	color: var(--color-ink-primary);
+	font-size: var(--text-xl);
+	font-weight: var(--font-weight-bold);
+	letter-spacing: -0.02em;
+	line-height: var(--leading-tight);
+}
+
+.description,
+.restriction,
+.emptyCopy,
+.messageMeta,
+.messageStatus,
+.characterCount {
+	margin: 0;
+	color: var(--color-ink-secondary);
+	font-size: var(--text-sm);
+	line-height: var(--leading-relaxed);
+}
+
+.restriction {
+	margin-top: var(--space-4);
+	padding-left: var(--space-3);
+	border-left: 3px solid var(--color-forest);
+	color: var(--color-ink-muted);
+}
+
+.form,
+.compose,
+.cancellationForm {
+	display: grid;
+	gap: var(--space-4);
+	margin-top: var(--space-5);
+}
+
+.fieldGrid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--space-4);
+}
+
+.formActions,
+.transitionActions,
+.threadActions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--space-3);
+}
+
+.statusMessage {
+	margin: 0;
+	color: var(--color-success);
+	font-size: var(--text-sm);
+	font-weight: var(--font-weight-medium);
+	line-height: var(--leading-normal);
+}
+
+.inlineError {
+	margin-top: var(--space-4);
+}
+
+.messageHeader {
+	display: flex;
+	justify-content: space-between;
+	gap: var(--space-4);
+	align-items: end;
+}
+
+.messageList {
+	display: grid;
+	gap: var(--space-3);
+	margin: var(--space-5) 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.message {
+	max-width: min(100%, 34rem);
+	padding: var(--space-3) var(--space-4);
+	border: 1px solid var(--color-border-subtle);
+	border-radius: var(--radius-md);
+	background: var(--color-bg-surface);
+}
+
+.ownMessage {
+	justify-self: end;
+	border-color: var(--color-success-border);
+	background: var(--color-success-bg);
+}
+
+.messageBody {
+	margin: 0;
+	color: var(--color-ink-primary);
+	font-size: var(--text-sm);
+	line-height: var(--leading-relaxed);
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+.messageFooter {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-2);
+	margin-top: var(--space-2);
+}
+
+.messageMeta,
+.messageStatus {
+	font-size: var(--text-xs);
+}
+
+.messageStatus {
+	color: var(--color-success);
+}
+
+.loadMore {
+	justify-self: start;
+}
+
+.loadingRows {
+	display: grid;
+	gap: var(--space-3);
+	margin-top: var(--space-5);
+}
+
+.loadingRows > span:nth-child(2) {
+	width: 78%;
+	justify-self: end;
+}
+
+.loadingRows > span:nth-child(3) {
+	width: 66%;
+}
+
+.transitionTitle {
+	margin: 0;
+	color: var(--color-ink-primary);
+	font-size: var(--text-lg);
+	font-weight: var(--font-weight-semibold);
+	letter-spacing: -0.01em;
+}
+
+.transitionCopy {
+	margin: var(--space-2) 0 0;
+	color: var(--color-ink-secondary);
+	font-size: var(--text-sm);
+	line-height: var(--leading-relaxed);
+}
+
+.cancelLabel {
+	margin: 0;
+	color: var(--color-ink-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-weight-semibold);
+}
+
+@media (max-width: 560px) {
+	.fieldGrid {
+		grid-template-columns: 1fr;
+	}
+
+	.formActions > *,
+	.transitionActions > *,
+	.threadActions > * {
+		flex: 1 1 auto;
+	}
+
+	.messageHeader {
+		display: grid;
+		align-items: start;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+	}
+}

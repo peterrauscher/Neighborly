@@ -1,6 +1,16 @@
+.git
+.gitignore
 node_modules
-build
-.dockerignore
-Dockerfile
-Dockerfile.prod
-Neighborly Thumbnail (Devpost).png
+dist
+coverage
+*.sqlite
+*.sqlite-*
+Dockerfile.dev
+nginx
+docs
+assets/*
+!assets/listings/
+assets/listings/*
+!assets/listings/*.png
+README.md
+ROADMAP.md
