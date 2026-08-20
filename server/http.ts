@@ -1,11 +1,13 @@
-import type { z } from "zod";
+import { z } from "zod";
 
+import { MAX_MULTIPART_BODY_BYTES } from "../src/lib/contracts";
 import type {
 	CanonicalErrorCode,
 	RouteContractDef,
 } from "../src/lib/contracts";
 
 export const MAX_JSON_BODY_BYTES = 64 * 1024;
+const MAX_MULTIPART_PARTS = 4;
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -69,6 +71,15 @@ export type RouteContext = {
 	params: unknown;
 	query: unknown;
 	body: unknown;
+	preflight: unknown;
+	requestId: string;
+};
+
+export type BeforeBodyContext = {
+	request: Request;
+	clientAddress: string | null;
+	params: unknown;
+	query: unknown;
 	requestId: string;
 };
 
@@ -91,15 +102,27 @@ export type RouteHandler = (
 	context: RouteContext,
 ) => HandlerResult | Promise<HandlerResult>;
 
+export type BeforeBodyHook = (
+	context: BeforeBodyContext,
+) => unknown | Promise<unknown>;
+
+export type RouteOptions = {
+	csrfExempt?: boolean;
+	beforeBody?: BeforeBodyHook;
+};
+
+type RouterRouteContract = RouteContractDef<
+	z.ZodTypeAny,
+	z.ZodTypeAny,
+	z.ZodTypeAny,
+	z.ZodTypeAny
+>;
+
 type RegisteredRoute = {
-	contract: RouteContractDef<
-		z.ZodTypeAny,
-		z.ZodTypeAny,
-		z.ZodTypeAny,
-		z.ZodTypeAny
-	>;
+	contract: RouterRouteContract;
 	handler: RouteHandler;
 	csrfExempt: boolean;
+	beforeBody?: BeforeBodyHook;
 	parts: string[];
 };
 
@@ -109,18 +132,114 @@ export type RouterOptions = {
 	beforeHandle?: () => void | Promise<void>;
 };
 
-const readBoundedJson = async (request: Request): Promise<unknown> => {
+const validateContentLength = (
+	request: Request,
+	maximumBytes: number,
+	overflowMessage: string,
+) => {
 	const contentLength = request.headers.get("content-length");
-	if (contentLength) {
-		const length = Number(contentLength);
-		if (!Number.isSafeInteger(length) || length < 0) {
-			throw new HttpError("BAD_REQUEST");
+	if (!contentLength) return;
+	const length = Number(contentLength);
+	if (!Number.isSafeInteger(length) || length < 0) {
+		throw new HttpError("BAD_REQUEST");
+	}
+	if (length > maximumBytes) {
+		throw new HttpError("BAD_REQUEST", overflowMessage);
+	}
+};
+
+const boundaryFailureTable = (boundary: Uint8Array): Uint8Array => {
+	const failure = new Uint8Array(boundary.byteLength);
+	for (
+		let index = 1, prefixLength = 0;
+		index < boundary.byteLength;
+		index += 1
+	) {
+		while (prefixLength > 0 && boundary[index] !== boundary[prefixLength]) {
+			const fallback = failure[prefixLength - 1] ?? 0;
+			prefixLength = fallback;
 		}
-		if (length > MAX_JSON_BODY_BYTES) {
-			throw new HttpError("BAD_REQUEST", "Request body exceeds 64 KiB.");
+		if (boundary[index] === boundary[prefixLength]) {
+			prefixLength += 1;
 		}
+		failure[index] = prefixLength;
+	}
+	return failure;
+};
+
+const readBoundedBody = async (
+	request: Request,
+	maximumBytes: number,
+	overflowMessage: string,
+	multipartBoundary?: Uint8Array,
+): Promise<ArrayBuffer> => {
+	if (!request.body) return new ArrayBuffer(0);
+
+	const reader = request.body.getReader();
+	const chunks: Uint8Array[] = [];
+	const failure = multipartBoundary
+		? boundaryFailureTable(multipartBoundary)
+		: undefined;
+	let length = 0;
+	let boundaryCount = 0;
+	let boundaryPrefixLength = 0;
+	try {
+		while (true) {
+			const chunk = await reader.read();
+			if (chunk.done) break;
+			length += chunk.value.byteLength;
+			if (length > maximumBytes) {
+				await reader.cancel();
+				throw new HttpError("BAD_REQUEST", overflowMessage);
+			}
+			if (multipartBoundary && failure) {
+				for (const byte of chunk.value) {
+					while (
+						boundaryPrefixLength > 0 &&
+						byte !== multipartBoundary[boundaryPrefixLength]
+					) {
+						const fallback = failure[boundaryPrefixLength - 1] ?? 0;
+						boundaryPrefixLength = fallback;
+					}
+					if (byte === multipartBoundary[boundaryPrefixLength]) {
+						boundaryPrefixLength += 1;
+					}
+					if (boundaryPrefixLength !== multipartBoundary.byteLength) {
+						continue;
+					}
+					boundaryCount += 1;
+					if (boundaryCount > MAX_MULTIPART_PARTS + 1) {
+						await reader.cancel();
+						throw new HttpError(
+							"BAD_REQUEST",
+							"Multipart request contains too many parts.",
+						);
+					}
+					const fallback = failure[boundaryPrefixLength - 1] ?? 0;
+					boundaryPrefixLength = fallback;
+				}
+			}
+			chunks.push(chunk.value);
+		}
+	} finally {
+		reader.releaseLock();
 	}
 
+	const body = new Uint8Array(length);
+	let offset = 0;
+	for (const chunk of chunks) {
+		body.set(chunk, offset);
+		offset += chunk.byteLength;
+	}
+	return body.buffer;
+};
+
+const readBoundedJson = async (request: Request): Promise<unknown> => {
+	validateContentLength(
+		request,
+		MAX_JSON_BODY_BYTES,
+		"Request body exceeds 64 KiB.",
+	);
 	if (!request.body) return {};
 
 	const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
@@ -130,40 +249,118 @@ const readBoundedJson = async (request: Request): Promise<unknown> => {
 			"Expected an application/json request body.",
 		);
 	}
-
-	const reader = request.body.getReader();
-	const chunks: Uint8Array[] = [];
-	let length = 0;
-
-	try {
-		while (true) {
-			const chunk = await reader.read();
-			if (chunk.done) break;
-			length += chunk.value.byteLength;
-			if (length > MAX_JSON_BODY_BYTES) {
-				throw new HttpError("BAD_REQUEST", "Request body exceeds 64 KiB.");
-			}
-			chunks.push(chunk.value);
-		}
-	} finally {
-		reader.releaseLock();
-	}
-
-	if (length === 0) return {};
-
-	const body = new Uint8Array(length);
-	let offset = 0;
-	for (const chunk of chunks) {
-		body.set(chunk, offset);
-		offset += chunk.byteLength;
-	}
-
+	const body = await readBoundedBody(
+		request,
+		MAX_JSON_BODY_BYTES,
+		"Request body exceeds 64 KiB.",
+	);
+	if (body.byteLength === 0) return {};
 	try {
 		return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(body));
 	} catch {
 		throw new HttpError(
 			"BAD_REQUEST",
 			"The request body must contain valid JSON.",
+		);
+	}
+};
+
+const RFC_MULTIPART_BOUNDARY =
+	/^[0-9A-Za-z'()+_,./:=?-](?:[0-9A-Za-z'()+_,./:=? -]{0,68}[0-9A-Za-z'()+_,./:=?-])?$/;
+
+const multipartBoundary = (contentType: string): Uint8Array => {
+	const match = /(?:^|;)\s*boundary=(?:\"([^\"]+)\"|([^;\s]+))/i.exec(
+		contentType,
+	);
+	const boundary = match?.[1] ?? match?.[2];
+	const encodedBoundary = boundary
+		? new TextEncoder().encode(boundary)
+		: undefined;
+	if (
+		!boundary ||
+		!encodedBoundary ||
+		encodedBoundary.byteLength > 70 ||
+		!RFC_MULTIPART_BOUNDARY.test(boundary)
+	) {
+		throw new HttpError("BAD_REQUEST", "Multipart boundary is invalid.");
+	}
+	return new TextEncoder().encode(`--${boundary}`);
+};
+
+const readBoundedMultipart = async (
+	request: Request,
+): Promise<{ images: File[]; metadata: unknown }> => {
+	const contentType = request.headers.get("content-type") ?? "";
+	const mediaType = contentType.split(";", 1)[0]?.trim().toLowerCase();
+	if (mediaType !== "multipart/form-data") {
+		throw new HttpError(
+			"BAD_REQUEST",
+			"Expected a multipart/form-data request body.",
+		);
+	}
+	validateContentLength(
+		request,
+		MAX_MULTIPART_BODY_BYTES,
+		"Multipart request body exceeds the upload limit.",
+	);
+	const body = await readBoundedBody(
+		request,
+		MAX_MULTIPART_BODY_BYTES,
+		"Multipart request body exceeds the upload limit.",
+		multipartBoundary(contentType),
+	);
+	let form: FormData;
+	try {
+		form = await new Request(request.url, {
+			method: request.method,
+			headers: { "Content-Type": contentType },
+			body,
+		}).formData();
+	} catch {
+		throw new HttpError("BAD_REQUEST", "The multipart request is malformed.");
+	}
+
+	const images: File[] = [];
+	let metadataText: string | undefined;
+	for (const [name, value] of form.entries()) {
+		if (name === "metadata") {
+			if (metadataText !== undefined || typeof value !== "string") {
+				throw new HttpError(
+					"BAD_REQUEST",
+					"Multipart metadata must occur once.",
+				);
+			}
+			metadataText = value;
+			continue;
+		}
+		if (name === "images") {
+			if (typeof value === "string") {
+				throw new HttpError("BAD_REQUEST", "Multipart images must be files.");
+			}
+			images.push(value);
+			continue;
+		}
+		throw new HttpError(
+			"BAD_REQUEST",
+			"Multipart request contains an unsupported part.",
+		);
+	}
+
+	if (metadataText === undefined) {
+		return { images, metadata: undefined };
+	}
+	if (metadataText.includes("\uFFFD")) {
+		throw new HttpError(
+			"BAD_REQUEST",
+			"Multipart metadata must be valid UTF-8.",
+		);
+	}
+	try {
+		return { images, metadata: JSON.parse(metadataText) };
+	} catch {
+		throw new HttpError(
+			"BAD_REQUEST",
+			"Multipart metadata must contain valid JSON.",
 		);
 	}
 };
@@ -243,7 +440,7 @@ const withSecurityHeaders = (headers: Headers, requestId: string) => {
 	headers.set("X-Frame-Options", "DENY");
 	headers.set("Cross-Origin-Opener-Policy", "same-origin");
 	headers.set("Cross-Origin-Resource-Policy", "same-origin");
-	headers.set("Cache-Control", "no-store");
+	if (!headers.has("Cache-Control")) headers.set("Cache-Control", "no-store");
 };
 
 const errorResponse = (error: HttpError, requestId: string): Response => {
@@ -279,16 +476,16 @@ export class FetchRouter {
 		this.#validateCsrf = options.validateCsrf;
 		this.#beforeHandle = options.beforeHandle;
 	}
-
 	add(
 		contract: RegisteredRoute["contract"],
 		handler: RouteHandler,
-		options: { csrfExempt?: boolean } = {},
+		options: RouteOptions = {},
 	): this {
 		this.#routes.push({
 			contract,
 			handler,
 			csrfExempt: options.csrfExempt ?? false,
+			beforeBody: options.beforeBody,
 			parts: contract.path.split("/").filter(Boolean),
 		});
 		return this;
@@ -340,9 +537,22 @@ export class FetchRouter {
 				route.contract.query,
 				queryObject(url),
 			);
-			const parsedBody = SAFE_METHODS.has(request.method)
-				? parseWithSchema(route.contract.body, {})
-				: parseWithSchema(route.contract.body, await readBoundedJson(request));
+			const preflight =
+				!SAFE_METHODS.has(request.method) && route.beforeBody
+					? await route.beforeBody({
+							request,
+							clientAddress,
+							params: parsedParams,
+							query: parsedQuery,
+							requestId,
+						})
+					: undefined;
+			const requestBody = SAFE_METHODS.has(request.method)
+				? {}
+				: route.contract.requestEncoding === "multipart"
+					? await readBoundedMultipart(request)
+					: await readBoundedJson(request);
+			const parsedBody = parseWithSchema(route.contract.body, requestBody);
 
 			const result = await route.handler({
 				request,
@@ -350,8 +560,23 @@ export class FetchRouter {
 				params: parsedParams,
 				query: parsedQuery,
 				body: parsedBody,
+				preflight,
 				requestId,
 			});
+			if (route.contract.responseEncoding === "binary") {
+				const binaryResponse = z.instanceof(Response).safeParse(result);
+				if (!binaryResponse.success) throw new HttpError("INTERNAL_ERROR");
+				if (binaryResponse.data.status !== route.contract.successStatus) {
+					throw new HttpError("INTERNAL_ERROR");
+				}
+				const headers = new Headers(binaryResponse.data.headers);
+				withSecurityHeaders(headers, requestId);
+				return new Response(binaryResponse.data.body, {
+					status: binaryResponse.data.status,
+					headers,
+				});
+			}
+
 			const body = isExplicitHandlerResult(result) ? result.body : result;
 			const headers = new Headers(
 				isExplicitHandlerResult(result) ? result.headers : undefined,

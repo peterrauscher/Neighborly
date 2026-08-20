@@ -3,7 +3,10 @@ import type { Database } from "bun:sqlite";
 import { AuthService } from "./auth";
 import { initializeDatabase, migrateDatabase } from "./db";
 import { FetchRouter, HttpError } from "./http";
+import { ImageService } from "./images";
+import { ListingService } from "./listings";
 import { registerAuthRoutes } from "./routes/auth";
+import { registerListingRoutes } from "./routes/listings";
 import { type SeedMode, seedDatabase } from "./seed";
 
 const developmentOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
@@ -65,6 +68,8 @@ export function createApp(options: CreateAppOptions = {}): AppHandler {
 		csrfSecret: options.csrfSecret,
 		secureCookies: production || options.secureCookies === true,
 	});
+	const listings = new ListingService({ db: database, now: options.now });
+	const images = new ImageService({ db: database, now: options.now });
 	let startupFailure = false;
 	const shouldSeed = options.seed ?? true;
 	const seedMode: SeedMode = production ? "public-demo" : "development";
@@ -83,6 +88,7 @@ export function createApp(options: CreateAppOptions = {}): AppHandler {
 	});
 
 	registerAuthRoutes(router, auth);
+	registerListingRoutes(router, auth, listings, images);
 
 	const handler: AppHandler = (request: Request, peerAddress?: unknown) => {
 		const clientAddress =

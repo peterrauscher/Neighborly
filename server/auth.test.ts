@@ -1,8 +1,10 @@
 import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
+import { z } from "zod";
 
 import { type AppHandler, createApp } from "./app";
 import { MAX_DEMO_ACTIVE_SESSIONS } from "./auth";
+import { FetchRouter } from "./http";
 import { LOCAL_FIXTURE_CREDENTIALS, seedDatabase } from "./seed";
 
 const ORIGIN = "http://neighborly.test";
@@ -698,5 +700,74 @@ describe("identity boundary", () => {
 		} finally {
 			db.close();
 		}
+	});
+
+	test("accepts four adversarial-prefix multipart parts and rejects a fifth", async () => {
+		const router = new FetchRouter({ allowedOrigins: [ORIGIN] });
+		router.add(
+			{
+				method: "POST",
+				path: "/multipart-adversarial",
+				params: z.object({}),
+				query: z.object({}),
+				body: z.object({
+					images: z.array(z.instanceof(File)).max(3),
+					metadata: z.object({ intent: z.literal("upload") }),
+				}),
+				requestEncoding: "multipart",
+				response: z.object({
+					data: z.object({ accepted: z.literal(true) }),
+				}),
+				responseEncoding: "json",
+				successStatus: 200,
+				errors: ["BAD_REQUEST"],
+			},
+			() => ({ data: { accepted: true } }),
+		);
+
+		const boundary = `${"a".repeat(69)}b`;
+		const repetitivePrefix = `--${"a".repeat(69)}x`.repeat(512);
+		const multipartRequest = (
+			partCount: number,
+			requestBoundary = boundary,
+		) => {
+			const parts = [
+				`--${requestBoundary}\r\nContent-Disposition: form-data; name="metadata"\r\n\r\n{"intent":"upload"}\r\n`,
+			];
+			for (let index = 1; index < partCount; index += 1) {
+				parts.push(
+					`--${requestBoundary}\r\nContent-Disposition: form-data; name="images"; filename="image-${index}.txt"\r\nContent-Type: text/plain\r\n\r\n${repetitivePrefix}${index}\r\n`,
+				);
+			}
+			parts.push(`--${requestBoundary}--\r\n`);
+			return new Request(`${ORIGIN}/multipart-adversarial`, {
+				method: "POST",
+				headers: {
+					"Content-Type": `multipart/form-data; boundary=${requestBoundary}`,
+					Origin: ORIGIN,
+				},
+				body: parts.join(""),
+			});
+		};
+
+		const accepted = await router.fetch(multipartRequest(4));
+		expect(accepted.status).toBe(200);
+		expect(await accepted.json()).toEqual({ data: { accepted: true } });
+
+		const rejected = await router.fetch(multipartRequest(5));
+		expect(rejected.status).toBe(400);
+		expect((await rejected.json()).error.code).toBe("BAD_REQUEST");
+
+		const invalidBoundary = await router.fetch(
+			multipartRequest(1, "a".repeat(71)),
+		);
+		expect(invalidBoundary.status).toBe(400);
+		expect((await invalidBoundary.json()).error.code).toBe("BAD_REQUEST");
+
+		const invalidSyntax = await router.fetch(
+			multipartRequest(1, "invalid@boundary"),
+		);
+		expect(invalidSyntax.status).toBe(400);
+		expect((await invalidSyntax.json()).error.code).toBe("BAD_REQUEST");
 	});
 });

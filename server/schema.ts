@@ -243,6 +243,14 @@ const createMessagesReviewsContacts = `
   CREATE INDEX IF NOT EXISTS idx_contact_messages_expires_at ON contact_messages(expires_at);
 `;
 
+const addListingPublicPreview = `
+  ALTER TABLE listings ADD COLUMN is_public_preview INTEGER NOT NULL DEFAULT 0 CHECK(is_public_preview IN (0, 1));
+
+  CREATE INDEX IF NOT EXISTS idx_listings_public_preview_active
+  ON listings(updated_at DESC)
+  WHERE is_public_preview = 1 AND status = 'active';
+`;
+
 const migrationStatements: string[] = [
 	createMigrationsTable,
 	createNeighborhoods,
@@ -254,6 +262,7 @@ const migrationStatements: string[] = [
 	createComments,
 	createRequests,
 	createMessagesReviewsContacts,
+	addListingPublicPreview,
 ];
 
 const migrationNames = [
@@ -267,6 +276,7 @@ const migrationNames = [
 	"comments",
 	"requests",
 	"messages_reviews_contacts",
+	"listing_public_preview",
 ];
 
 export const migrations: Migration[] = migrationStatements.map(

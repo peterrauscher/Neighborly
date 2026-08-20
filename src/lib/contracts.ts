@@ -8,8 +8,9 @@ export const MAX_CONTACT_MESSAGE_LENGTH = 2000;
 export const MAX_COMMENT_LENGTH = 1200;
 export const MAX_MESSAGE_LENGTH = 1500;
 export const MAX_REVIEW_LENGTH = 800;
-export const MAX_LISTING_IMAGES = 3;
+export const MAX_LISTING_IMAGE_COUNT = 3;
 export const MAX_LISTING_IMAGE_BYTES = 5 * 1024 * 1024;
+export const MAX_MULTIPART_BODY_BYTES = 16 * 1024 * 1024;
 export const MAX_LISTING_IMAGE_PIXELS = 20_000_000;
 
 const ID_PATTERN = /^[a-z0-9](?:[a-z0-9_-]{2,62}[a-z0-9])?$/i;
@@ -367,7 +368,11 @@ export const ListingImageMetaSchema = z.object({
 	mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
 	width: z.number().int().min(1).max(5000),
 	height: z.number().int().min(1).max(5000),
-	sortOrder: z.number().int().min(0).max(MAX_LISTING_IMAGES),
+	sortOrder: z
+		.number()
+		.int()
+		.min(0)
+		.max(MAX_LISTING_IMAGE_COUNT - 1),
 	byteSize: z.number().int().min(1).max(MAX_LISTING_IMAGE_BYTES),
 });
 
@@ -385,7 +390,7 @@ export const ListingBaseSchema = z.object({
 	status: ListingStatusSchema,
 	createdAt: TimestampSchema,
 	updatedAt: TimestampSchema,
-	images: z.array(ListingImageMetaSchema).max(MAX_LISTING_IMAGES),
+	images: z.array(ListingImageMetaSchema).max(MAX_LISTING_IMAGE_COUNT),
 });
 
 export const PublicListingSummarySchema = ListingBaseSchema.pick({
@@ -465,7 +470,7 @@ export const ListingPatchFieldsSchema = z.object({
 	condition: ListingConditionSchema.optional(),
 	availableFrom: DateOnlySchema.optional(),
 	availableThrough: DateOnlySchema.optional(),
-	availabilityNotes: z.string().trim().max(400).nullable(),
+	availabilityNotes: z.string().trim().max(400).nullable().optional(),
 	wantedItem: z.string().trim().min(2).max(140).optional(),
 });
 
@@ -481,7 +486,7 @@ export const PatchListingInputSchema = z
 		}
 
 		const hasUpdate = Object.values(values).some(
-			(value) => value !== undefined && value !== null,
+			(value) => value !== undefined,
 		);
 		if (!hasUpdate) {
 			context.addIssue({
@@ -494,18 +499,67 @@ export const PatchListingInputSchema = z
 
 export const ListingStateMutateInputSchema = z.object({});
 
-export const AddListingImagesInputSchema = z.object({
-	imageCount: z.number().int().min(1).max(MAX_LISTING_IMAGES),
-	images: z
-		.array(
-			z.object({
-				altText: z.string().trim().min(1).max(140),
-				sortOrder: z.number().int().min(0).max(MAX_LISTING_IMAGES),
-			}),
-		)
-		.max(MAX_LISTING_IMAGES)
-		.min(1),
-});
+export const AddListingImagesInputSchema = z
+	.object({
+		images: z
+			.array(
+				z
+					.instanceof(File)
+					.refine(
+						(file) => file.size <= MAX_LISTING_IMAGE_BYTES,
+						`Images must not exceed ${MAX_LISTING_IMAGE_BYTES} bytes`,
+					),
+			)
+			.min(1)
+			.max(MAX_LISTING_IMAGE_COUNT),
+		metadata: z
+			.array(
+				z.object({
+					altText: z.string().trim().min(1).max(140),
+					sortOrder: z
+						.number()
+						.int()
+						.min(0)
+						.max(MAX_LISTING_IMAGE_COUNT - 1),
+				}),
+			)
+			.min(1)
+			.max(MAX_LISTING_IMAGE_COUNT),
+	})
+	.strict()
+	.superRefine((value, context) => {
+		if (value.images.length !== value.metadata.length) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "images and metadata must have equal lengths",
+				path: ["metadata"],
+			});
+		}
+
+		const imageBytes = value.images.reduce(
+			(total, image) => total + image.size,
+			0,
+		);
+		if (imageBytes > MAX_MULTIPART_BODY_BYTES) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: `Multipart image payload must not exceed ${MAX_MULTIPART_BODY_BYTES} bytes`,
+				path: ["images"],
+			});
+		}
+
+		const sortOrders = new Set<number>();
+		for (const [index, metadata] of value.metadata.entries()) {
+			if (sortOrders.has(metadata.sortOrder)) {
+				context.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: "sortOrder values must be unique",
+					path: ["metadata", index, "sortOrder"],
+				});
+			}
+			sortOrders.add(metadata.sortOrder);
+		}
+	});
 
 export const DeleteListingImageInputSchema = z.object({});
 
@@ -777,6 +831,9 @@ export const NeighborsResponseSchema = CursorEnvelopeSchema(
 export const PublicContractErrorSchema = CanonicalErrorEnvelopeSchema;
 export const NoContentSchema = z.void();
 
+export type RequestEncoding = "json" | "multipart";
+export type ResponseEncoding = "json" | "binary";
+
 export interface RouteContractDef<
 	Params extends z.ZodTypeAny,
 	Query extends z.ZodTypeAny,
@@ -789,18 +846,49 @@ export interface RouteContractDef<
 	query: Query;
 	body: Body;
 	response: Response;
+	requestEncoding: RequestEncoding;
+	responseEncoding: ResponseEncoding;
 	successStatus: number;
 	errors: readonly CanonicalErrorCode[];
 }
+
+type RouteContractInput<
+	Params extends z.ZodTypeAny,
+	Query extends z.ZodTypeAny,
+	Body extends z.ZodTypeAny,
+	Response extends z.ZodTypeAny,
+	InputRequestEncoding extends RequestEncoding,
+	InputResponseEncoding extends ResponseEncoding,
+> = Omit<
+	RouteContractDef<Params, Query, Body, Response>,
+	"requestEncoding" | "responseEncoding"
+> & {
+	requestEncoding?: InputRequestEncoding;
+	responseEncoding?: InputResponseEncoding;
+};
 
 const route = <
 	Params extends z.ZodTypeAny,
 	Query extends z.ZodTypeAny,
 	Body extends z.ZodTypeAny,
 	Response extends z.ZodTypeAny,
+	InputRequestEncoding extends RequestEncoding = "json",
+	InputResponseEncoding extends ResponseEncoding = "json",
 >(
-	contract: RouteContractDef<Params, Query, Body, Response>,
-) => contract;
+	contract: RouteContractInput<
+		Params,
+		Query,
+		Body,
+		Response,
+		InputRequestEncoding,
+		InputResponseEncoding
+	>,
+) => ({
+	...contract,
+	requestEncoding: (contract.requestEncoding ?? "json") as InputRequestEncoding,
+	responseEncoding: (contract.responseEncoding ??
+		"json") as InputResponseEncoding,
+});
 
 const NoInput = z.object({});
 
@@ -1005,6 +1093,7 @@ export const API_ROUTES = {
 		params: z.object({ id: IdSchema }),
 		query: NoInput,
 		body: AddListingImagesInputSchema,
+		requestEncoding: "multipart",
 		response: EnvelopeSchema(z.array(ListingImageMetaSchema)),
 		successStatus: 201,
 		errors: [
@@ -1015,6 +1104,17 @@ export const API_ROUTES = {
 			"VALIDATION_ERROR",
 			"INTERNAL_ERROR",
 		],
+	}),
+	listingImageGet: route({
+		method: "GET",
+		path: "/api/listing-images/:imageId",
+		params: z.object({ imageId: IdSchema }),
+		query: NoInput,
+		body: NoInput,
+		response: z.instanceof(Response),
+		responseEncoding: "binary",
+		successStatus: 200,
+		errors: ["UNAUTHORIZED", "FORBIDDEN", "NOT_FOUND", "INTERNAL_ERROR"],
 	}),
 	listingDeleteImage: route({
 		method: "DELETE",

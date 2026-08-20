@@ -468,6 +468,12 @@ const listingRows: SeedListing[] = [
 	},
 ];
 
+const PUBLIC_PREVIEW_LISTING_IDS = Object.freeze([
+	"list_lend_001",
+	"list_borrow_002",
+	"list_trade_003",
+]);
+
 const requestRows: SeedRequest[] = [
 	{
 		id: "req_001",
@@ -915,6 +921,13 @@ const validateSeedFixtures = () => {
 	const usersById = assertDistinctIds(userRows, "user");
 	const listingsById = assertDistinctIds(listingRows, "listing");
 	const requestsById = assertDistinctIds(requestRows, "request");
+
+	for (const listingId of PUBLIC_PREVIEW_LISTING_IDS) {
+		assertSeed(
+			listingsById.has(listingId),
+			`public preview listing ${listingId} must be seeded`,
+		);
+	}
 
 	for (const neighborhood of neighborhoodRows) {
 		assertTimestamps(neighborhood, `neighborhood ${neighborhood.id}`);
@@ -1464,6 +1477,9 @@ export async function seedDatabase(
 	const preparedMessage = insertMessage(db);
 	const preparedReview = insertReview(db);
 	const preparedImage = insertListingImage(db);
+	const markPublicPreviewListing = db.prepare(
+		"UPDATE listings SET is_public_preview = 1 WHERE id = ?",
+	);
 	const updateFixturePassword = db.prepare(
 		"UPDATE users SET password_hash = ? WHERE id = ?",
 	);
@@ -1533,6 +1549,10 @@ export async function seedDatabase(
 				listing.createdAt,
 				listing.updatedAt,
 			);
+		}
+
+		for (const listingId of PUBLIC_PREVIEW_LISTING_IDS) {
+			markPublicPreviewListing.run(listingId);
 		}
 
 		for (const request of requestRows) {
