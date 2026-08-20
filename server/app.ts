@@ -4,8 +4,10 @@ import { AuthService } from "./auth";
 import { initializeDatabase, migrateDatabase } from "./db";
 import { FetchRouter, HttpError } from "./http";
 import { ImageService } from "./images";
+import { InteractionService } from "./interactions";
 import { ListingService } from "./listings";
 import { registerAuthRoutes } from "./routes/auth";
+import { registerInteractionRoutes } from "./routes/interactions";
 import { registerListingRoutes } from "./routes/listings";
 import { type SeedMode, seedDatabase } from "./seed";
 
@@ -70,6 +72,10 @@ export function createApp(options: CreateAppOptions = {}): AppHandler {
 	});
 	const listings = new ListingService({ db: database, now: options.now });
 	const images = new ImageService({ db: database, now: options.now });
+	const interactions = new InteractionService({
+		db: database,
+		now: options.now,
+	});
 	let startupFailure = false;
 	const shouldSeed = options.seed ?? true;
 	const seedMode: SeedMode = production ? "public-demo" : "development";
@@ -89,6 +95,7 @@ export function createApp(options: CreateAppOptions = {}): AppHandler {
 
 	registerAuthRoutes(router, auth);
 	registerListingRoutes(router, auth, listings, images);
+	registerInteractionRoutes(router, auth, interactions);
 
 	const handler: AppHandler = (request: Request, peerAddress?: unknown) => {
 		const clientAddress =

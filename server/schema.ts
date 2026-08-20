@@ -251,6 +251,71 @@ const addListingPublicPreview = `
   WHERE is_public_preview = 1 AND status = 'active';
 `;
 
+const addInteractionReadIndexes = `
+  CREATE INDEX IF NOT EXISTS idx_requests_requester_updated_at
+  ON requests(requester_id, updated_at DESC, id DESC);
+
+  CREATE INDEX IF NOT EXISTS idx_requests_listing_updated_at
+  ON requests(listing_id, updated_at DESC, id DESC);
+
+  CREATE INDEX IF NOT EXISTS idx_messages_request_created_at_id
+  ON messages(request_id, created_at ASC, id ASC);
+
+  CREATE INDEX IF NOT EXISTS idx_reviews_reviewer_id
+  ON reviews(reviewer_id);
+
+  CREATE INDEX IF NOT EXISTS idx_users_neighborhood_created_at
+  ON users(neighborhood_id, created_at DESC, id DESC);
+`;
+
+const addRequestResponseHistory = `
+  ALTER TABLE requests ADD COLUMN owner_responded_at INTEGER
+  CHECK(owner_responded_at IS NULL OR owner_responded_at > 0);
+
+  UPDATE requests
+  SET owner_responded_at = updated_at
+  WHERE owner_responded_at IS NULL
+    AND status IN ('accepted', 'declined', 'completed');
+
+  CREATE TRIGGER IF NOT EXISTS requests_set_owner_response_on_insert
+  AFTER INSERT ON requests
+  WHEN NEW.owner_responded_at IS NULL
+    AND NEW.status IN ('accepted', 'declined', 'completed')
+  BEGIN
+    UPDATE requests
+    SET owner_responded_at = NEW.updated_at
+    WHERE id = NEW.id AND owner_responded_at IS NULL;
+  END;
+
+  CREATE TRIGGER IF NOT EXISTS requests_set_owner_response_on_pending_resolution
+  AFTER UPDATE OF status ON requests
+  WHEN OLD.status = 'pending'
+    AND NEW.status IN ('accepted', 'declined')
+    AND NEW.owner_responded_at IS NULL
+  BEGIN
+    UPDATE requests
+    SET owner_responded_at = NEW.updated_at
+    WHERE id = NEW.id AND owner_responded_at IS NULL;
+  END;
+
+  CREATE TRIGGER IF NOT EXISTS requests_require_owner_resolution_for_response
+  BEFORE UPDATE OF owner_responded_at ON requests
+  WHEN OLD.owner_responded_at IS NULL
+    AND NEW.owner_responded_at IS NOT NULL
+    AND NEW.status NOT IN ('accepted', 'declined', 'completed')
+  BEGIN
+    SELECT RAISE(ABORT, 'owner response requires an owner resolution');
+  END;
+
+  CREATE TRIGGER IF NOT EXISTS requests_prevent_owner_response_rewrite
+  BEFORE UPDATE OF owner_responded_at ON requests
+  WHEN OLD.owner_responded_at IS NOT NULL
+    AND NEW.owner_responded_at IS NOT OLD.owner_responded_at
+  BEGIN
+    SELECT RAISE(ABORT, 'owner response timestamp is immutable');
+  END;
+`;
+
 const migrationStatements: string[] = [
 	createMigrationsTable,
 	createNeighborhoods,
@@ -263,6 +328,8 @@ const migrationStatements: string[] = [
 	createRequests,
 	createMessagesReviewsContacts,
 	addListingPublicPreview,
+	addInteractionReadIndexes,
+	addRequestResponseHistory,
 ];
 
 const migrationNames = [
@@ -277,6 +344,8 @@ const migrationNames = [
 	"requests",
 	"messages_reviews_contacts",
 	"listing_public_preview",
+	"interaction_read_indexes",
+	"request_response_history",
 ];
 
 export const migrations: Migration[] = migrationStatements.map(
