@@ -2,7 +2,7 @@ import { useQuery } from "@apollo/client";
 import Loading from "components/Loading";
 import ProfilePost from "components/ProfilePost";
 import UnsplashImage from "components/UnsplashImage";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { USER, USER_POSTS } from "realm/graphql";
 
 const User = () => {
@@ -17,10 +17,8 @@ const User = () => {
   } = useQuery(USER_POSTS, {
     variables: { accountId: accountId },
   });
-  const navigate = useNavigate();
-
-  if (error || postError) navigate("/not-found");
   if (loading || postLoading) return <Loading />;
+  if (error || postError || !data?.user) return <Navigate to="/not-found" replace />;
 
   return (
     <>
@@ -32,12 +30,15 @@ const User = () => {
           <div className="user-info">
             <div className="top">
               <div className="user-avatar">
-                <img src={data.user.avatar} />
+                <img
+                  src={data.user?.avatar}
+                  alt={data.user?.name ? `${data.user.name}'s avatar` : "User avatar"}
+                />
               </div>
             </div>
             <div className="bottom">
               <div className="name-and-follow">
-                <p className="title is-3">{data.user.name}</p>
+                <p className="title is-3">{data.user?.name || "Neighbor"}</p>
               </div>
               <div className="stats">
                 <p className="content">
@@ -45,7 +46,7 @@ const User = () => {
                     <span className="icon">
                       <i className="fa fa-map-pin"></i>
                     </span>{" "}
-                    {data.user.neighborhood.label}
+                    {data.user?.neighborhood?.label || "Neighborhood"}
                   </span>
                 </p>
                 <p className="content">

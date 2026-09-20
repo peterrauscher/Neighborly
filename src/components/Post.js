@@ -26,7 +26,7 @@ const Post = ({ post }) => {
       lightGallery.current = detail.instance;
       lightGallery.current.openGallery();
     }
-  }, []);
+  }, [gallery]);
 
   const setContainerRef = useCallback((node) => {
     if (node !== null) setGalleryContainer(node);
@@ -55,14 +55,14 @@ const Post = ({ post }) => {
         <div className="post-avatar">
           <img
             className="avatar"
-            src={post.author.avatar}
-            alt={`${post.author.name}'s avatar`}
+            src={post.author?.avatar}
+            alt={post.author?.name ? `${post.author.name}'s avatar` : "Author avatar"}
           />
         </div>
         <div className="post-content">
           <div className="post-author">
             <div>
-              <a href={`/user/${post.author.accountId}`}>{post.author.name}</a>
+              <a href={`/user/${post.author?.accountId || ""}`}>{post.author?.name || "Neighbor"}</a>
               <p className="post-time">
                 <ReactTimeAgo date={post.postedAt} locale="en-US" />
               </p>

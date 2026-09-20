@@ -19,7 +19,11 @@ const Profile = () => {
         <div className="column is-3">
           <div className="avatar-box">
             <figure className="image is-128x128">
-              <img className="is-rounded" src={data.user.avatar} />
+              <img
+                className="is-rounded"
+                src={data.user?.avatar}
+                alt={data.user?.name ? `${data.user.name}'s avatar` : "Profile avatar"}
+              />
             </figure>
           </div>
           <aside className="menu">

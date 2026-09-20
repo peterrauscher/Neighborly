@@ -1,17 +1,6 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React from "react";
 
 const UnsplashImage = ({ searchTerm, elementClasses = "" }) => {
-  const [image, setImage] = useState(null);
-
-  useEffect(() => {
-    if (searchTerm) {
-      // const apiUrl = `https://api.unsplash.com/photos/random?client_id=g1KQl19jGPi4w6JsayOGfoT_QS1ee8VgT0GSWlpM5bk&query=${searchTerm}&orientation=landscape`;
-      // axios.get(apiUrl).then((response) => {
-      //   setImage(response.data.urls["regular"]);
-      // });
-    }
-  }, [searchTerm]);
 
   return (
     <img
