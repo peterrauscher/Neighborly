@@ -18,13 +18,14 @@ export const ModalProvider = ({ children }) => {
     setModalContent("");
     setIsModalVisible(false);
   };
-
   useEffect(() => {
     if (modalTimeout) {
-      setTimeout(() => {
+      const delay = modalTimeout > 50 ? modalTimeout : 1000 * modalTimeout;
+      const timer = setTimeout(() => {
         setIsModalVisible(false);
         setModalTimeout(null);
-      }, 1000 * modalTimeout);
+      }, delay);
+      return () => clearTimeout(timer);
     }
   }, [modalTimeout]);
 

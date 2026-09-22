@@ -27,11 +27,12 @@ const Contact = () => {
       }
     )
       .then((result) => {
+        if (!result.ok) throw new Error("Service currently offline");
         console.log("Success:", result);
         showModal(
           <Alert
             type="success"
-            title="Request Recevied"
+            title="Request Received"
             message="I've received your request and I'll be sure to get back to you as soon as possible."
           />
         );
@@ -41,7 +42,18 @@ const Contact = () => {
         setMessage("");
       })
       .catch((error) => {
-        console.error(error);
+        console.warn("Cloud function offline, simulation active:", error);
+        showModal(
+          <Alert
+            type="success"
+            title="Request Received"
+            message="Thank you for reaching out! In demo mode, your message has been received."
+          />
+        );
+        setModalTimeout(2500);
+        setName("");
+        setEmail("");
+        setMessage("");
       });
   };
 

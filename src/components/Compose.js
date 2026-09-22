@@ -15,8 +15,9 @@ const Compose = ({ setShouldReload = null }) => {
   const [files, setFiles] = useState([]);
   const { user, firebaseStorage } = useContext(UserContext);
   const { showModal, setModalTimeout } = useModal();
-  const [insertOnePost, { data, loading, error }] =
-    useMutation(INSERT_ONE_POST);
+  const [insertOnePost, { error }] = useMutation(INSERT_ONE_POST, {
+    refetchQueries: ["GetPostsWithAuthors", "GetUserPosts"],
+  });
 
   const setActive = (e) => {
     e.preventDefault();
@@ -47,45 +48,58 @@ const Compose = ({ setShouldReload = null }) => {
     } else {
       const images = await Promise.all(
         files.map(async (file) => {
-          const fileName = generateUniqueFileName();
-          const fileRef = ref(firebaseStorage, `images/${fileName}`);
-          await uploadBytes(fileRef, file);
-          return getDownloadURL(fileRef);
+          try {
+            const fileName = generateUniqueFileName();
+            const fileRef = ref(firebaseStorage, `images/${fileName}`);
+            await uploadBytes(fileRef, file);
+            return await getDownloadURL(fileRef);
+          } catch (uploadErr) {
+            console.warn("Firebase upload failed, falling back to data URL:", uploadErr);
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsDataURL(file);
+            });
+          }
         })
       );
 
-      insertOnePost({
-        variables: {
-          data: {
-            authorId: user.id.toString(),
-            neighborhood: user.customData.neighborhood,
-            images: images,
-            content: postBody,
-            postType: postType,
-            postedAt: new Date(),
+      try {
+        await insertOnePost({
+          variables: {
+            data: {
+              authorId: user.id.toString(),
+              neighborhood: user.customData.neighborhood,
+              images: images,
+              content: postBody,
+              postType: postType,
+              postedAt: new Date(),
+            },
           },
-        },
-        onCompleted: () => {
-          setPostBody("");
-          // @ts-ignore
-          document.getElementById("file-input").files.value = "";
-          showModal(
-            <Alert
-              type="success"
-              title="Success"
-              message="Your post was published!"
-            />
-          );
-          setModalTimeout(1);
-          if (setShouldReload) setShouldReload(true);
-        },
-        onError: () => {
-          console.error(error);
-          showModal(
-            <Alert type="danger" title="Post Error" message={error.message} />
-          );
-        },
-      });
+        });
+        setPostBody("");
+        setFiles([]);
+        const fileInput = document.getElementById("file-input");
+        if (fileInput) fileInput.value = "";
+        showModal(
+          <Alert
+            type="success"
+            title="Success"
+            message="Your post was published!"
+          />
+        );
+        setModalTimeout(1500);
+        if (setShouldReload) setShouldReload((prev) => !prev);
+      } catch (mutationErr) {
+        console.error(mutationErr || error);
+        showModal(
+          <Alert
+            type="danger"
+            title="Post Error"
+            message={mutationErr?.message || error?.message || "Failed to publish post"}
+          />
+        );
+      }
     }
   };
 
