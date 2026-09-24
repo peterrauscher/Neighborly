@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="drillBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="dewalt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#drillBg)"/>
+  <!-- Drill Chuck & Bit -->
+  <rect x="520" y="215" width="100" height="10" fill="#94a3b8"/>
+  <polygon points="620,215 635,220 620,225" fill="#e2e8f0"/>
+  <rect x="470" y="200" width="50" height="40" rx="5" fill="#334155"/>
+  <!-- Drill Body -->
+  <path d="M 280 180 L 470 180 L 470 260 L 360 260 L 330 380 L 260 380 L 280 250 Z" fill="url(#dewalt)"/>
+  <!-- Battery pack -->
+  <rect x="230" y="370" width="130" height="50" rx="10" fill="#0f172a" stroke="#475569" stroke-width="4"/>
+  <!-- Trigger & Accents -->
+  <path d="M 345 250 Q 365 270 345 285" stroke="#ef4444" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <rect x="330" y="195" width="80" height="25" rx="4" fill="#1e293b"/>
+  <!-- Badge -->
+  <rect x="530" y="40" width="230" height="50" rx="25" fill="#fbbf24"/>
+  <text x="645" y="72" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="20" font-weight="bold" fill="#451a03" text-anchor="middle">LEND • TOOLS</text>
+  <text x="360" y="80" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="30" font-weight="bold" fill="#f8fafc" text-anchor="middle">20V Cordless Power Drill</text>
+</svg>

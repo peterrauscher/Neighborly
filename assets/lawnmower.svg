@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="lawnBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#234e32"/>
+      <stop offset="100%" stop-color="#142c1c"/>
+    </linearGradient>
+    <linearGradient id="mowerBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e53935"/>
+      <stop offset="100%" stop-color="#b71c1c"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#lawnBg)"/>
+  <rect y="380" width="800" height="120" fill="#2d6a4f"/>
+  <!-- Grass blades -->
+  <path d="M 50 380 L 60 350 L 70 380 M 120 380 L 135 345 L 145 380 M 680 380 L 695 340 L 710 380 M 740 380 L 750 350 L 760 380" stroke="#52b788" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <!-- Handle -->
+  <path d="M 220 200 L 340 330" stroke="#718096" stroke-width="12" stroke-linecap="round"/>
+  <path d="M 180 170 L 230 210" stroke="#e2e8f0" stroke-width="14" stroke-linecap="round"/>
+  <!-- Mower Engine and deck -->
+  <rect x="310" y="290" width="220" height="90" rx="20" fill="url(#mowerBody)"/>
+  <rect x="360" y="240" width="120" height="60" rx="10" fill="#2d3748"/>
+  <rect x="380" y="225" width="80" height="20" rx="5" fill="#4a5568"/>
+  <!-- Wheels -->
+  <circle cx="340" cy="385" r="45" fill="#1a202c" stroke="#a0aec0" stroke-width="8"/>
+  <circle cx="340" cy="385" r="16" fill="#e2e8f0"/>
+  <circle cx="500" cy="385" r="45" fill="#1a202c" stroke="#a0aec0" stroke-width="8"/>
+  <circle cx="500" cy="385" r="16" fill="#e2e8f0"/>
+  <!-- Badge -->
+  <rect x="530" y="40" width="230" height="50" rx="25" fill="#ffb703"/>
+  <text x="645" y="72" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="20" font-weight="bold" fill="#000814" text-anchor="middle">LEND • TOOLS</text>
+  <text x="400" y="100" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="32" font-weight="bold" fill="#ffffff" text-anchor="middle">Honda Self-Propelled Mower</text>
+</svg>
