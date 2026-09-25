@@ -62,7 +62,6 @@ const Feed = ({ posts = "all" }) => {
           postType: posts,
         },
       });
-      setShouldReload(false);
     }
   }, [neighborhood, shouldReload, getAllPosts, posts]);
 

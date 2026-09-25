@@ -9,18 +9,34 @@ const EmptyForm = {
 
 const Login = () => {
   const [formData, setFormData] = useState(EmptyForm);
+  const [errorMsg, setErrorMsg] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-  const { app, refreshUser, emailPasswordLogin } = useContext(UserContext);
+  const { user, loginAsDemo, emailPasswordLogin } = useContext(UserContext);
+
+  const handleRedirect = useCallback(() => {
+    const goTo = location.search.replace("?redirect=", "");
+    navigate(goTo ? goTo : "/feed");
+  }, [location.search, navigate]);
 
   const loginUser = async () => {
     if (formData.email && formData.password) {
-      await emailPasswordLogin(formData.email, formData.password);
-      setFormData(EmptyForm);
-      handleRedirect();
+      setErrorMsg("");
+      const res = await emailPasswordLogin(formData.email, formData.password);
+      if (res?.success) {
+        setFormData(EmptyForm);
+        handleRedirect();
+      } else {
+        setErrorMsg(res?.error || "Login failed");
+      }
     }
   };
 
+  const handleDemo = (e) => {
+    e.preventDefault();
+    loginAsDemo("user_peter");
+    handleRedirect();
+  };
   const handleState = (e) =>
     setFormData((data) => ({ ...data, [e.target.name]: e.target.value }));
 
@@ -29,23 +45,13 @@ const Login = () => {
     loginUser();
   };
 
-  const handleRedirect = useCallback(() => {
-    const goTo = location.search.replace("?redirect=", "");
-    navigate(goTo ? goTo : "/");
-  }, [location.search, navigate]);
-
   const resetPassword = () => {};
 
   useEffect(() => {
-    const loadUser = async () => {
-      if (app.currentUser) handleRedirect();
-      else {
-        const fetchedUser = await refreshUser();
-        if (fetchedUser) handleRedirect();
-      }
-    };
-    loadUser();
-  }, [app.currentUser, refreshUser, handleRedirect]);
+    if (user) {
+      handleRedirect();
+    }
+  }, [user, handleRedirect]);
 
   return (
     <div className="has-background-green">
@@ -55,6 +61,23 @@ const Login = () => {
             <div className="login columns">
               <div className="column">
                 <h1 className="title is-3">Welcome back</h1>
+                <div className="notification is-light is-info has-text-center p-3 mb-4">
+                  <p className="is-size-7 mb-2">
+                    <strong>Quick Demo Access</strong>
+                  </p>
+                  <button
+                    type="button"
+                    className="button is-dark is-small is-fullwidth"
+                    onClick={handleDemo}
+                  >
+                    Explore as Peter (Demo)
+                  </button>
+                </div>
+                {errorMsg && (
+                  <div className="notification is-danger is-light p-2 mb-3 is-size-7">
+                    {errorMsg}
+                  </div>
+                )}
                 <form onSubmit={handleSubmit}>
                   <div className="field">
                     <div className="control">

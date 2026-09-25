@@ -10,21 +10,31 @@ const EmptyForm = {
 };
 
 const Register = () => {
-  const { app, refreshUser, emailPasswordSignup } = useContext(UserContext);
+  const { user, loginAsDemo, emailPasswordSignup } = useContext(UserContext);
   const location = useLocation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState(EmptyForm);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleRedirect = useCallback(() => {
+    const goTo = location.search.replace("?redirect=", "");
+    navigate(goTo === "" ? "/feed" : goTo);
+  }, [location.search, navigate]);
 
   const registerUser = async () => {
-    console.log(formData);
-    await emailPasswordSignup(
+    setErrorMsg("");
+    const res = await emailPasswordSignup(
       formData.name,
       formData.email,
       formData.password,
       formData.confirmPassword
     );
-    setFormData(EmptyForm);
-    handleRedirect();
+    if (res?.success) {
+      setFormData(EmptyForm);
+      handleRedirect();
+    } else {
+      setErrorMsg(res?.error || "Registration failed");
+    }
   };
 
   const handleState = (e) =>
@@ -35,21 +45,11 @@ const Register = () => {
     registerUser();
   };
 
-  const handleRedirect = useCallback(() => {
-    const goTo = location.search.replace("?redirect=", "");
-    navigate(goTo === "" ? "/feed" : goTo);
-  }, [location.search, navigate]);
-
   useEffect(() => {
-    const loadUser = async () => {
-      if (app.currentUser) handleRedirect();
-      else {
-        const fetchedUser = await refreshUser();
-        if (fetchedUser) handleRedirect();
-      }
-    };
-    loadUser();
-  }, [app.currentUser, refreshUser, handleRedirect]);
+    if (user) {
+      handleRedirect();
+    }
+  }, [user, handleRedirect]);
 
   return (
     <div className="has-background-green">
@@ -67,6 +67,26 @@ const Register = () => {
               </div>
               <div className="column is-half right">
                 <h1 className="title is-3">Sign up for free</h1>
+                <div className="notification is-light is-info has-text-center p-3 mb-4">
+                  <p className="is-size-7 mb-2">
+                    <strong>Quick Demo Access</strong>
+                  </p>
+                  <button
+                    type="button"
+                    className="button is-dark is-small is-fullwidth"
+                    onClick={() => {
+                      loginAsDemo("user_peter");
+                      handleRedirect();
+                    }}
+                  >
+                    Explore as Peter (Demo)
+                  </button>
+                </div>
+                {errorMsg && (
+                  <div className="notification is-danger is-light p-2 mb-3 is-size-7">
+                    {errorMsg}
+                  </div>
+                )}
                 <form onSubmit={handleSubmit}>
                   <div className="field">
                     <div className="control">
